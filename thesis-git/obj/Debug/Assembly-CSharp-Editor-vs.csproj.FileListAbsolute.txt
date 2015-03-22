@@ -1,0 +1,17 @@
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Assembly-CSharp-Editor.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Assembly-CSharp-Editor.pdb
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Assembly-UnityScript-firstpass.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\UnityEditor.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\UnityEditor.Graphs.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\UnityEditor.UI.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\UnityEngine.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\UnityEngine.UI.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Mono.Cecil.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\nunit.framework.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Unity.DataContract.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\ICSharpCode.NRefactory.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Assembly-CSharp-firstpass.pdb
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\Temp\bin\Debug\Assembly-CSharp.pdb
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\obj\Debug\Assembly-CSharp-Editor-vs.csprojResolveAssemblyReference.cache
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\obj\Debug\Assembly-CSharp-Editor.dll
+C:\Users\s\Documents\Unity Repositories\thesis\Thesis Unity\obj\Debug\Assembly-CSharp-Editor.pdb

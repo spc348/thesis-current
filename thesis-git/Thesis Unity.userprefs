@@ -1,0 +1,24 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\PanelOrganizer.cs">
+    <Files>
+      <File FileName="Assets\Scripts\PanelOrganizer.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\WalkableTrigger.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Movement.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\ScreenshotBehavior.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\bus_movement.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\CourseScript.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State>
+          <Value>distance</Value>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
