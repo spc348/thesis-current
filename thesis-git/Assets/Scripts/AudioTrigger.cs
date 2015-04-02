@@ -1,84 +1,110 @@
-﻿using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 public class AudioTrigger : MonoBehaviour
 {
-    public CourseScript script;
-    public PlayerScript movement;
-    public GameObject player;
-    public CheckpointScript scoreboard;
-    public AudioClip clip;
-    private AudioSource source;
-    public bool hasPlayed, final;
-    public int audio_routine_length;
-    public bool atCheckPoint;
-    public PanelOrganizer panels;
-    public int place;
+	public CourseScript Script;
+	public PlayerScript Movement;
+	public GameObject Player;
+	public CheckpointScript Scoreboard;
+	public AudioClip Clip;
+	public AudioClip LandmarkName;
+	private AudioSource source;
+	public bool HasPlayed, Final;
+	public bool AtCheckPoint;
+	public PanelOrganizer Panels;
+	public int Place, Duration; 
+	static float audioRoutineLength;
+	static float repeatPanelTime;
+	public PreferenceSelections Prefs;
+
+	public static float AudioRoutineLength {
+		get {
+			return audioRoutineLength;
+		}
+		set {
+			audioRoutineLength = value;
+		}
+	}
+
+	public static float RepeatPanelTime {
+		get {
+			return repeatPanelTime;
+		}
+		set {
+			repeatPanelTime = value;
+		}
+	}
+
+	void Awake ()
+	{
+		Player = GameObject.FindGameObjectWithTag ("Player");
+		Movement = Player.GetComponent<PlayerScript> ();
+		Panels = GameObject.FindGameObjectWithTag ("PanelOrganizer").GetComponent<PanelOrganizer> ();
+		Script = GameObject.FindGameObjectWithTag ("CoursePlanner").GetComponent<CourseScript> ();
+		source = GetComponent<AudioSource> ();
+		Prefs = GameObject.FindGameObjectWithTag ("Prefs").GetComponent<PreferenceSelections> ();
+		HasPlayed = false;
+	}
+
+	void Start ()
+	{
+		AtCheckPoint = false;
+	}
 
 
-    void Awake()
-    {
-        player = GameObject.FindGameObjectWithTag("Player");
-        movement = player.GetComponent<PlayerScript>();
-        panels = GameObject.FindGameObjectWithTag("PanelOrganizer").GetComponent<PanelOrganizer>();
-        script = GameObject.FindGameObjectWithTag("CoursePlanner").GetComponent<CourseScript>();
-        source = GetComponent<AudioSource>();
-        hasPlayed = false;
-    }
+	void FlipPlayedBool ()
+	{
+		HasPlayed = !HasPlayed;
+	}
 
-    void Start()
-    {
-        atCheckPoint = false;
-        audio_routine_length = 2;
-    }
+	IEnumerator playAudioRoutine (AudioClip clip)
+	{
+		if (!source.isPlaying) {
+			source.PlayOneShot (clip);
 
-    IEnumerator playAudioRoutine(AudioClip clip)
-    {
-        if (!source.isPlaying)
-        {
-            source.PlayOneShot(clip);
+			yield return new WaitForSeconds (clip.length + Prefs._PlayerInstance.PlayAudioTime);
+			Panels.ClearSubpanels ();
+			Movement.enabled = true;
+		}
+	}
 
-            yield return new WaitForSeconds(clip.length + audio_routine_length);
+	public void ResetPlayedFlag ()
+	{
+		HasPlayed = false;
+	}
 
-            movement.enabled = !movement.enabled;
-        }
-    }
+	void OnTriggerEnter (Collider other)
+	{
+		if (other.tag == "Player" && !source.isPlaying && other.gameObject.activeSelf) {
 
-    public void reset_played_flag()
-    {
-        hasPlayed = false;
-    }
+			Debug.Log (Place);
+			AtCheckPoint = true;
+			Script.AtCheckPoint = true;
 
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "Player" && !source.isPlaying && other.gameObject.activeSelf)
-        {
+			Script.ApproachedMarker = Place;
 
-            Debug.Log(place);
-            atCheckPoint = true;
-            script.atCheckPoint = true;
-            movement.enabled = !movement.enabled;
-            StartCoroutine(playAudioRoutine(clip));
+			if (!HasPlayed) {
+				Movement.enabled = false;
+				StartCoroutine (playAudioRoutine (Clip));
+				Panels.InitGameSubpanel (Place);
+				HasPlayed = true;
+			}
 
-            script.currentMarker = place;
+			Invoke ("FlipPlayedBool", Prefs._PlayerInstance.ShowPanelTime); 
 
+			if (Final) {
+				Panels.AtFinal ();
+			}
+		}
+	}
 
-            panels.init_game_subpanel(place);
-            hasPlayed = true;
-
-            if (final)
-            {
-                panels.atFinal();
-            }
-        }
-    }
-    void OnTriggerExit(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-            script.atCheckPoint = false;
-            panels.clear_subpanels();
-        }
-        Debug.Log(place + " " + System.DateTime.Now.ToLongTimeString());
-    }
+	void OnTriggerExit (Collider other)
+	{
+		if (other.tag == "Player") {
+			Script.AtCheckPoint = false;
+			Panels.ClearSubpanels ();
+		}
+		Debug.Log (Place + " " + System.DateTime.Now.ToLongTimeString ());
+	}
 }

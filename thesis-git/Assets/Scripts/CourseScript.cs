@@ -1,210 +1,251 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 public class CourseScript : MonoBehaviour
 {
-    public Dictionary<int, Vector3> Positions;
-    public Dictionary<string, AudioClip> clipLibrary;
-    public PanelOrganizer panels;
-    public List<GameObject> markers;
-    public GameObject[] loadedMarkers, audiotriggers;
-    public GameObject player, CheckPrefab;
-	public int nextMarker, LastMarker,previousMarker,currentMarker;
-    public AudioTrigger audioScript;
-    public bool lifeFlag, atCheckPoint;
-    public int courseLength = 7;
-    public PlayerScript playerScript;
-    public GameObject m1, m2, m3, m4, m5, m6, cat;
-    private GameObject[] Markers;
-    public float dist_to_next;
+	// For Unity3d, being public means that I can see these variables in real time in the editor
+	public Dictionary<int, Vector3> Positions;
+	public Dictionary<string, AudioClip> ClipLibrary;
+	public PanelOrganizer Panels;
+	public List<GameObject> MarkersList;
+	public GameObject[] LoadedMarkers, Audiotriggers;
+	public GameObject Player, CheckPrefab;
+	public int NextMarker, PresentMarker, PreviousMarker, ApproachedMarker;
+	public AudioTrigger AudioScript;
+	public bool LifeFlag, AtCheckPoint;
+	static int courseLength;
+	public PlayerScript PlayerScript;
+	public GameObject M1, M2, M3, M4, M5, M6, Cat;
+	private GameObject[] Markers;
+	public float DistToNext;
+	public PreferenceSelections Prefs;
 
-    void Awake()
-    {
-        player = GameObject.FindGameObjectWithTag("Player");
-        playerScript = player.GetComponent<PlayerScript>();
-        player = GameObject.FindGameObjectWithTag("Player");
-        playerScript = player.GetComponent<PlayerScript>();
-        panels = GameObject.FindGameObjectWithTag("PanelOrganizer").GetComponent<PanelOrganizer>();
-        markers = new List<GameObject>();
-        loadMarkers();
-    }
+	// Part of the the design of the game is to give caretakers choices in personalizing the game for their students
+	// Here the length of the course is alterable
+	public static int CourseLength {
+		get {
+			return courseLength;
+		}
+		set {
+			courseLength = value;
+		}
+	}
 
-    void Start()
-    {
-        nextMarker = 0;
-        LastMarker = 0;
-        lifeFlag = false;
-        atCheckPoint = false;
-        player.transform.position = playerScript.playerStartPosition;
+	void Awake ()
+	{
+		// Find and cache attachments to requisite classes
 
-    }
+		Player = GameObject.FindGameObjectWithTag ("Player");
+		PlayerScript = Player.GetComponent<PlayerScript> ();
+		Player = GameObject.FindGameObjectWithTag ("Player");
+		PlayerScript = Player.GetComponent<PlayerScript> ();
+		Panels = GameObject.FindGameObjectWithTag ("PanelOrganizer").GetComponent<PanelOrganizer> ();
+		courseLength = 7;
+	}
 
-    void loadMarkers()
-    {
-        loadedMarkers = new GameObject[courseLength];
-        loadedMarkers[0] = m1;
-        loadedMarkers[1] = m2;
-        loadedMarkers[2] = m3;
-        loadedMarkers[3] = m4;
-        loadedMarkers[4] = m5;
-        loadedMarkers[5] = m6;
-        loadedMarkers[6] = cat;
-    }
+	void Start ()
+	{
+		if (PreferenceSelections.PrefsSelected) {
+			courseLength = Prefs._PlayerInstance.CourseLength;
+		}
+		//Initializations
+		NextMarker = 0;
+		PresentMarker = 0;
+		LifeFlag = false;
+		AtCheckPoint = false;
+		Player.transform.position = PlayerScript.PlayerStartPosition;
 
-    public Vector3[] Markercollection()
-    {
+	}
 
-        Vector3[] markerVectors = new Vector3[courseLength];
+	void LateUpdate ()
+	{
+		// In progress design of navigational logic
+		if (AtCheckPoint) { // at a landmark
+			PresentMarker = ApproachedMarker; // observe current location from marker
+			NextMarker = ChartNextMove (PresentMarker); // determine where to go next
+			if (ComparePlace () && !LifeFlag) { // determine if not going in the right direction and record errors
+				Panels.SubLife (); 
+				LifeFlag = true;
+			}
+		} else { // 
+			PreviousMarker = PresentMarker; // away from the landmark, iterate to the new nearest marker
+			LifeFlag = false;
+		}
+		
+		
+		if (Panels.ActivePanel == Panels.GamePanel) { // if in the game
+			InitDistanceTracking (); //check distance to the next desired marker
+		}
+	}
 
-        for (int i = 0; i < markerVectors.Length; i++)
-        {
-            markerVectors[i] = loadedMarkers[i].transform.position;
-        }
+	void loadMarkerStandins () //load markers from the scene to this script
+	{
+		LoadedMarkers = new GameObject[courseLength];
+		LoadedMarkers [0] = M1;
+		LoadedMarkers [1] = M2;
+		LoadedMarkers [2] = M3;
+		LoadedMarkers [3] = M4;
+		LoadedMarkers [4] = M5;
+		LoadedMarkers [5] = M6;
+		LoadedMarkers [6] = Cat;
+	}
 
-        return markerVectors;
-    }
+	public void GameStart () // Booting the game
+	{
+		MarkersList = new List<GameObject> (); // list of markers in the game
+		loadMarkerStandins (); // using the positions of stand ins
+		ClearMarkers (); // clear any relic markers
+		MakeAudioLibrary (); //assemble the audio clip libary from resources folder
+		MakeCourse (DesignCourse (Markercollection ())); // insert prefab markers into position, in the designed order, with the
+		// correct directional audio clips
+		Player.transform.position = PlayerScript.PlayerStartPosition;
+		Player.transform.rotation = PlayerScript.PlayerStartRotation; // set the player in the starting position
+		ResetFlags (); //removed any relic flag information
+	}
+	
+	void MakeAudioLibrary ()
+	{
 
-    public void GameStart()
-    {
-        clear_markers();
-        makeAudioLibrary();
-        makeCourse(designCourse(Markercollection()));
-        player.transform.position = playerScript.playerStartPosition;
-        player.transform.rotation = playerScript.playerStartRotation;
-        reset_flags();
-    }
+		//load and label audio files into the game 
 
-    public void atFinal()
-    {
-        panels.SetPanel(panels.endPanel);
+		ClipLibrary = new Dictionary<string, AudioClip> ();
 
-    }
+		//directionals
+		ClipLibrary.Add ("check", Resources.Load<AudioClip> ("check"));
+		ClipLibrary.Add ("great job", Resources.Load<AudioClip> ("greatjob"));
+		ClipLibrary.Add ("stop", Resources.Load<AudioClip> ("stop"));
+		ClipLibrary.Add ("turn around", Resources.Load<AudioClip> ("turnaround"));
+		ClipLibrary.Add ("turn left", Resources.Load<AudioClip> ("turnleft"));
+		ClipLibrary.Add ("turn right", Resources.Load<AudioClip> ("turnright"));
+		ClipLibrary.Add ("forward", Resources.Load<AudioClip> ("forward"));
+		//landmarks
+		ClipLibrary.Add ("trashcan", Resources.Load<AudioClip> ("trashcan"));
+		ClipLibrary.Add ("Missy", Resources.Load<AudioClip> ("Missy"));
+		ClipLibrary.Add ("crosswalk", Resources.Load<AudioClip> ("crosswalk"));
+		ClipLibrary.Add ("streetlamp", Resources.Load<AudioClip> ("streetlamp"));
+		ClipLibrary.Add ("streetlight", Resources.Load<AudioClip> ("streetlight"));
+		ClipLibrary.Add ("hydrant", Resources.Load<AudioClip> ("hydrant"));
+		ClipLibrary.Add ("tree", Resources.Load<AudioClip> ("tree"));
 
-    public void reset_flags()
-    {
-        audiotriggers = GameObject.FindGameObjectsWithTag("marker");
-        foreach (var i in audiotriggers)
-        {
-            AudioTrigger script = i.GetComponent<AudioTrigger>();
-            script.reset_played_flag();
-        }
-    }
+	}
 
-    void LateUpdate()
-    {
-        if (atCheckPoint)
-        {
-            LastMarker = currentMarker;
-            nextMarker = chartNextMove(LastMarker);
-            if (comparePlace() && !lifeFlag)
-            {
-                Debug.Log("wrong way");
-                panels.SubLife();
-                Debug.Log("lives left " + GameManager.life);
-                lifeFlag = true;
-            }
-        }
-        else
-        {
-            previousMarker = LastMarker;
-            lifeFlag = false;
-        }
+	public Vector3[] Markercollection ()
+	{
+		// derive position from marker stand ins
+
+		Vector3[] markerVectors = new Vector3[courseLength];
+		
+		for (int i = 0; i < markerVectors.Length; i++) {
+			markerVectors [i] = LoadedMarkers [i].transform.position;
+		}
+		
+		return markerVectors;
+	}
+
+	Dictionary<int, Vector3> DesignCourse (Vector3[] vectors)
+	{
+		//order the positions of the markers for the specified course
+
+		Dictionary<int, Vector3> positions = new Dictionary<int, Vector3> ();
+		
+		positions.Add (0, vectors [0]);
+		positions.Add (1, vectors [1]);
+		positions.Add (2, vectors [2]);
+		positions.Add (3, vectors [3]);
+		positions.Add (4, vectors [4]);
+		positions.Add (5, vectors [5]);
+		positions.Add (6, vectors [6]);
+		
+		return positions;
+	}
+
+	void MakeCourse (Dictionary<int, Vector3> positions)
+	{
+		// reference the correct audio files using easy to read labels
+
+		string[] directions = new string[courseLength];
+		directions [0] = "forward";
+		directions [1] = "turn left";
+		directions [2] = "turn right";
+		directions [3] = "turn left";
+		directions [4] = "stop";
+		directions [5] = "turn right";
+		directions [6] = "turn left";
+
+		string[] landmarks = new string[courseLength];
+		landmarks [0] = "trashcan";
+		landmarks [1] = "tree";
+		landmarks [2] = "crosswalk";
+		landmarks [3] = "streetlight";
+		landmarks [4] = "streetlamp";
+		landmarks [5] = "hydrant";
+		landmarks [6] = "Missy";
+		
+		foreach (KeyValuePair<int, Vector3> kvp in positions) {
+			//make an audio checkpoint 
+			GameObject marker = Instantiate (CheckPrefab, kvp.Value, Quaternion.identity) as GameObject; //generate marker prefab in the scene
+			MarkersList.Add (marker); //save each created marker
+			marker.tag = "marker"; //attach a tag to find it with
+			AudioScript = marker.GetComponent<AudioTrigger> (); //cache the script attached to the marker.
+			AudioScript.Clip = ClipLibrary [directions [kvp.Key]]; //attach correct directional audio clip to the marker
+			AudioScript.LandmarkName = ClipLibrary [landmarks [kvp.Key]]; //attach landmark name audio clip 
+			AudioScript.Place = kvp.Key; // give it a number for debugging
+			AudioScript.HasPlayed = false; //baseline all flags
+			
+			if (AudioScript.Place == courseLength - 1) //find the last marker
+				AudioScript.Final = true; 
+		}
+	}
+
+	public void AtFinal ()
+	{
+		Panels.SetPanel (Panels.EndPanel); //end the game
+
+	}
+
+	public void ResetFlags ()
+	{
+		// find all the markers and clear relic flags
+
+		Audiotriggers = GameObject.FindGameObjectsWithTag ("marker");
+		foreach (var i in Audiotriggers) {
+			AudioTrigger script = i.GetComponent<AudioTrigger> ();
+			script.ResetPlayedFlag ();
+		}
+	}
 
 
-        if (panels.activePanel == panels.gamePanel)
-        {
-            init_distance_tracking();
-        }
-    }
+	// very basic course check
+	bool ComparePlace ()
+	{
+		return PreviousMarker - PresentMarker > 1 || PresentMarker < PreviousMarker;
+	}
+	// very basic navigational check
+	int ChartNextMove (int num)
+	{
+		return ++num;
+	}
 
-    bool comparePlace()
-    {
-        return previousMarker - LastMarker > 1 || LastMarker < previousMarker;
-    }
 
-    int chartNextMove(int num)
-    {
-        return ++num;
-    }
+	public void Restart () //restart the game
+	{
+		ClearMarkers ();
+		ResetFlags ();
+	}
 
-    void makeAudioLibrary()
-    {
-        clipLibrary = new Dictionary<string, AudioClip>();
+	public void ClearMarkers () //remove markers from last game
+	{
+		foreach (var i in MarkersList) {
+			Destroy (i);
+		}
+	}
 
-        clipLibrary.Add("check", Resources.Load<AudioClip>("check"));
-        clipLibrary.Add("great job", Resources.Load<AudioClip>("greatjob"));
-        clipLibrary.Add("stop", Resources.Load<AudioClip>("stop"));
-        clipLibrary.Add("turn around", Resources.Load<AudioClip>("turnaround"));
-        clipLibrary.Add("turn left", Resources.Load<AudioClip>("turnleft"));
-        clipLibrary.Add("turn right", Resources.Load<AudioClip>("turnright"));
-        clipLibrary.Add("forward", Resources.Load<AudioClip>("forward"));
-    }
-
-    Dictionary<int, Vector3> designCourse(Vector3[] Vectors)
-    {
-
-        Dictionary<int, Vector3> positions = new Dictionary<int, Vector3>();
-
-        positions.Add(0, Vectors[0]);
-        positions.Add(1, Vectors[1]);
-        positions.Add(2, Vectors[2]);
-        positions.Add(3, Vectors[3]);
-        positions.Add(4, Vectors[4]);
-        positions.Add(5, Vectors[5]);
-        positions.Add(6, Vectors[6]);
-
-        return positions;
-    }
-
-    void makeCourse(Dictionary<int, Vector3> positions)
-    {
-
-        string[] directions = new string[courseLength];
-        directions[0] = "forward";
-        directions[1] = "turn left";
-        directions[2] = "turn right";
-        directions[3] = "turn left";
-        directions[4] = "stop";
-        directions[5] = "turn right";
-        directions[6] = "turn left";
-
-        foreach (KeyValuePair<int, Vector3> kvp in positions)
-        {
-            //make an audio checkpoint 
-            GameObject marker = Instantiate(CheckPrefab, kvp.Value, Quaternion.identity) as GameObject;
-            markers.Add(marker);
-            marker.tag = "marker";
-            audioScript = marker.GetComponent<AudioTrigger>();
-            audioScript.clip = clipLibrary[directions[kvp.Key]];
-            audioScript.place = kvp.Key;
-            audioScript.hasPlayed = false;
-
-            if (audioScript.place == courseLength - 1)
-                audioScript.final = true;
-        }
-    }
-
-    public void restart()
-    {
-        clear_markers();
-        reset_flags();
-    }
-
-    public void clear_markers()
-    {
-        foreach (var i in markers)
-        {
-            Destroy(i);
-        }
-    }
-
-    public void init_distance_tracking()
-    {
-        Markers = GameObject.FindGameObjectsWithTag("marker");
-        if (Markers[0] != null)
-        {
-            dist_to_next = Vector3.Distance(player.transform.position, Markers[nextMarker].transform.position);
-        }
-    }
+	public void InitDistanceTracking () // checks distance from player to next marker
+	{
+		Markers = GameObject.FindGameObjectsWithTag ("marker"); //find current markers
+		if (Markers [0] != null && PreferenceSelections.PrefsSelected) { //if they are present
+			// track distance to the next marker
+			DistToNext = Vector3.Distance (Player.transform.position, Markers [NextMarker].transform.position); 
+		}
+	}
 }

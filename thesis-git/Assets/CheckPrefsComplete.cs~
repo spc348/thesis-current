@@ -1,0 +1,19 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+
+public class CheckPrefsComplete : MonoBehaviour
+{
+	public PreferenceSelections Preferences;
+	Text text;
+
+	// Update is called once per frame
+	void UpdateRadio ()
+	{
+		if (PreferenceSelections.PrefsSelected) {
+			enabled = true;
+		} else {
+			enabled = false;
+		}
+	}
+}
