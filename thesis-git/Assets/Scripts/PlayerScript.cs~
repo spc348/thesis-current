@@ -6,15 +6,11 @@ public class PlayerScript : MonoBehaviour
 
 	static float speed;
 	static float rotSpeed;
-	public Vector3 PlayerStartPosition;
-	public Quaternion PlayerStartRotation;
-		
-	void Start ()
-	{
-		PlayerStartPosition = transform.position;
-		PlayerStartRotation = transform.rotation;
-	}
+	public static Vector3 PlayerStartPosition;
+	public static Quaternion PlayerStartRotation;
 
+	public static PlayerScript PlayerRef;
+	
 	public static float Speed {
 		get {
 			return speed;
@@ -23,7 +19,7 @@ public class PlayerScript : MonoBehaviour
 			speed = value;
 		}
 	}
-
+	
 	public static float RotSpeed {
 		get {
 			return rotSpeed;
@@ -33,6 +29,20 @@ public class PlayerScript : MonoBehaviour
 		}
 	}
 
+	void Awake ()
+	{
+		PlayerRef = this;
+	}
+
+	void Start ()
+	{
+		PlayerStartPosition = transform.position;
+		PlayerStartRotation = transform.rotation;
+		speed = 42f;
+		rotSpeed = 72f;
+	}
+
+
 	public void Reset ()
 	{
 		transform.position = PlayerStartPosition;
@@ -41,29 +51,31 @@ public class PlayerScript : MonoBehaviour
 		
 	void FixedUpdate ()
 	{
-		Move ();
+		if (PreferenceSelections.PrefsSelected) {
+			Move ();
+		}
 	}
 
 	void Move ()
 	{
-		float forwardMovement = Input.GetAxis ("Vertical") * speed * Time.deltaTime;
-		float turnMovement = Input.GetAxis ("Horizontal") * speed * Time.deltaTime;
+		float forwardMovement = Input.GetAxis ("Vertical") * PreferenceSelections.PlayerInstance.PlayerSpeed * Time.deltaTime;
+		float turnMovement = Input.GetAxis ("Horizontal") * PreferenceSelections.PlayerInstance.PlayerSpeed * Time.deltaTime;
 
 		transform.Translate (Vector3.forward * forwardMovement);
 		transform.Translate (Vector3.right * turnMovement);
 
 		if (Input.GetKey (KeyCode.Q)) {
-			transform.Rotate (Vector3.up * -rotSpeed * Time.deltaTime);
+			transform.Rotate (Vector3.up * -PreferenceSelections.PlayerInstance.PlayerRotationSpeed * Time.deltaTime);
 		}
 
 		if (Input.GetKey (KeyCode.E)) {
-			transform.Rotate (Vector3.up * rotSpeed * Time.deltaTime);
+			transform.Rotate (Vector3.up * PreferenceSelections.PlayerInstance.PlayerRotationSpeed * Time.deltaTime);
 		}
         
 		if (Input.touchCount > 0 && Input.GetTouch (0).phase == TouchPhase.Moved) {
 			Vector2 touchDeltaPosition = Input.GetTouch (0).deltaPosition;
-			transform.Translate (0, 0, touchDeltaPosition.y * speed * Time.deltaTime);
-			transform.Rotate (0, touchDeltaPosition.x * rotSpeed * Time.deltaTime, 0);
+			transform.Translate (0, 0, touchDeltaPosition.y * PreferenceSelections.PlayerInstance.PlayerSpeed * Time.deltaTime);
+			transform.Rotate (0, touchDeltaPosition.x * PreferenceSelections.PlayerInstance.PlayerRotationSpeed * Time.deltaTime, 0);
 		}
 	}
 }

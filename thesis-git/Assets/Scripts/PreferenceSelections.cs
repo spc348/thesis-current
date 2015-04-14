@@ -1,109 +1,158 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PreferenceSelections : MonoBehaviour
 {
-	PlayerScript playerScript;
-	AudioTrigger audioTrigger;
-	PanelOrganizer panelOrganizer;
-	CourseScript courseScript;
+    //attributes
+    public static PlayerAttributes InstanceAttributes;
+    public float ShowPanelTime;
+    public float PlayAudioTime;
+    public float PlayerSpeed;
+    public float PlayerRotationSpeed;
+    public bool UseTextInstruction;
+    public int CourseLength;
+    public int CrossingTime;
 
-	public PlayerAttributes _PlayerInstance;
+    //data
+    public static PlayerData InstanceData;
+    public int SkippedLandmark;
+    public float AvgSecsToTarget;
+    public int Jaywalked;
+    public int CollidePedestrian;
+    public int Lost;
 
-	public static bool PrefsSelected;
+    List<PlayerData> datumHistory;
 
-	void Start ()
-	{
-		PrefsSelected = false;
-	}
-	public void SetCourseLength (int length)
-	{
-		CourseScript.CourseLength = length;
-	}
-	public void SetUseTextBoolean (bool decision)
-	{
-		PanelOrganizer.UseTextInstruction = decision;
-	}
+    public static bool PrefsSelected;
 
-	public void SetRepeatPanelLength (float value)
-	{
-		AudioTrigger.RepeatPanelTime = value;
-	}
+    public static PreferenceSelections PrefsRef;
 
-	public void SetAudioLength (float value)
-	{
-		AudioTrigger.AudioRoutineLength = value;
-	}
+    void Awake()
+    {
+        PrefsSelected = false;
+        PrefsRef = this;
+        datumHistory = new List<PlayerData>();
 
-	public void SetPlayerSpeed (float value)
-	{
-		PlayerScript.Speed = value;
-	}
+        if (InstanceData == null)
+        {
+            InstanceData = new PlayerData(SkippedLandmark, AvgSecsToTarget, Jaywalked, CollidePedestrian, Lost);
+        }
+        else
+        {
+            LogData();
+        }
 
-	public void SetPlayerRotSpeed (float value)
-	{
-		PlayerScript.RotSpeed = value;
-	}
+        if(InstanceAttributes == null)
+        {
+            InstanceAttributes = new PlayerAttributes(8f, 2f, 35f, 55f, 7, false, 8f);
+        }
+    }
 
-	public void MakePlayerInstace ()
-	{
-		//check for user input
-		if (AudioTrigger.AudioRoutineLength > 0) {
-			if (AudioTrigger.RepeatPanelTime > 0) {
-				if (PlayerScript.Speed > 0) {
-					if (PlayerScript.RotSpeed > 0) {
-						if (CourseScript.CourseLength > 0) {
-							_PlayerInstance = new PlayerAttributes (AudioTrigger.RepeatPanelTime, AudioTrigger.AudioRoutineLength,
-							                             PlayerScript.Speed, PlayerScript.RotSpeed, CourseScript.CourseLength,
-							                             PanelOrganizer.UseTextInstruction);
-							PrefsSelected = true;
-						} else { //load defaults
-							CourseScript.CourseLength = 7;
-						}
-					} else {
-						PlayerScript.RotSpeed = 50f;
-					}
-				} else {
-					PlayerScript.Speed = 35f;
-				}
-			} else {
-				AudioTrigger.RepeatPanelTime = 7f;
-			}
-		} else { 
+    public void LogData()
+    {
+        datumHistory.Add(InstanceData);
+        InstanceData = new PlayerData(SkippedLandmark, AvgSecsToTarget, Jaywalked, CollidePedestrian, Lost);
+    }
 
-			AudioTrigger.AudioRoutineLength = 2f;
+    public void ClearData()
+    {
+        SkippedLandmark = 0;
+        AvgSecsToTarget = 0;
+        Jaywalked = 0;
+        CollidePedestrian = 0;
+        Lost = 0;
+    }
 
-			PanelOrganizer.UseTextInstruction = true;
+    public void SetCrossingTime(float length)
+    {
+        Crossing.CrossingTime = length;
+        InstanceAttributes.CrossingTime = length;
+    }
+    public void SetCourseLength(int length)
+    {
+        CourseScript.CourseLength = length;
+        InstanceAttributes.CourseLength = length;
+    }
+    public void SetUseSymbBoolean(bool decision)
+    {
+        PanelOrganizer.UseSymbInstruction = decision;
+        InstanceAttributes.UseSymbols = decision;
+    }
+    public void SetRepeatPanelLength(float value)
+    {
+        AudioTrigger.RepeatPanelTime = value;
+        InstanceAttributes.RepeatPanelTime = value;
+    }
+    public void SetAudioLength(float value)
+    {
+        AudioTrigger.AudioRoutineLength = value;
+        InstanceAttributes.PlayAudioTime = value;
+    }
+    public void SetPlayerSpeed(float value)
+    {
+        PlayerScript.Speed = value;
+        InstanceAttributes.PlayerSpeed = value;
+    }
+    public void SetPlayerRotSpeed(float value)
+    {
+        PlayerScript.RotSpeed = value;
+        InstanceAttributes.PlayerRotationSpeed = value;
+    }
 
-			_PlayerInstance = new PlayerAttributes (AudioTrigger.RepeatPanelTime, AudioTrigger.AudioRoutineLength,
-		                            PlayerScript.Speed, PlayerScript.RotSpeed, CourseScript.CourseLength,
-		                            PanelOrganizer.UseTextInstruction);
+    public void MakePlayerInstance()
+    {
+        InstanceAttributes = new PlayerAttributes(AudioTrigger.RepeatPanelTime, AudioTrigger.AudioRoutineLength,
+                                     PlayerScript.Speed, PlayerScript.RotSpeed, CourseScript.CourseLength,
+                                     PanelOrganizer.UseSymbInstruction, Crossing.CrossingTime);
+        PrefsSelected = true;
+    }
 
-			PrefsSelected = true;
-		}
-	}
+    public class PlayerData
+    {
+        //player stats
+        public int SkippedLandmarks;
+        public float AvgSecsToTarget;
+        public int Jaywalked;
+        public int CollidePedestrian;
+        public int Lost;
 
-	public class PlayerAttributes
-	{
+        public PlayerData(int skipped, float timeTo, int jays, int bumps, int lost)
+        {
+            PreferenceSelections.InstanceData = this;
+            this.SkippedLandmarks = skipped;
+            this.AvgSecsToTarget = timeTo;
+            this.Jaywalked = jays;
+            this.CollidePedestrian = bumps;
+            this.Lost = lost;
 
-		public float ShowPanelTime;
-		public float PlayAudioTime;
-		public float PlayerSpeed;
-		public float PlayerRotationSpeed;
-		public bool UseTextInstruction;
-		public int CourseLength;
+        }
+    }
 
-		public PlayerAttributes (float showPanelTime, float playAudioTime, float playerSpeed, 
-		                       float playerRotationSpeed, int courseLength, 
-		                       bool useTextInstruction)
-		{
-			this.ShowPanelTime = showPanelTime;
-			this.PlayAudioTime = playAudioTime;
-			this.PlayerSpeed = playerSpeed;
-			this.PlayerRotationSpeed = playerRotationSpeed;
-			this.CourseLength = courseLength;
-			this.UseTextInstruction = useTextInstruction;
-		}
-		
-	}
+    public class PlayerAttributes
+    {
+        //player preferences
+        public float RepeatPanelTime;
+        public float PlayAudioTime;
+        public float PlayerSpeed;
+        public float PlayerRotationSpeed;
+        public bool UseSymbols;
+        public int CourseLength;
+        public float CrossingTime;
+
+        public PlayerAttributes(float repeatPanelTime, float playAudioTime, float playerSpeed,
+                               float playerRotationSpeed, int courseLength,
+                               bool useTextInstruction, float crossingTime)
+        {
+            PreferenceSelections.InstanceAttributes = this;
+            this.RepeatPanelTime = repeatPanelTime;
+            this.PlayAudioTime = playAudioTime;
+            this.PlayerSpeed = playerSpeed;
+            this.PlayerRotationSpeed = playerRotationSpeed;
+            this.CourseLength = courseLength;
+            this.UseSymbols = useTextInstruction;
+            this.CrossingTime = crossingTime;
+        }
+    }
+
 }

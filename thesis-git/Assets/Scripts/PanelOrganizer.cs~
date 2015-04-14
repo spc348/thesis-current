@@ -4,27 +4,15 @@ using UnityEngine;
 public class PanelOrganizer : MonoBehaviour
 {
 	public GameObject[] Panels, Lives, Subpanels, Audiotriggers, Markers;
-	public GameObject GameText, Panel0, Panel1, Panel2, Panel3, Panel4, Panel5, Player;
+	public GameObject GameText, Panel0, Panel1, Panel2, Panel3, Panel4, Panel5, Panel6, Player;
 	public GameObject Health0, Health1, Health2;
 	public int ActivePanel, StartPanel, EndPanel, GamePanel;
-	public CourseScript _CourseScript;
 	public Camera MainCamera;
 	public GameObject GamepanelSubpanel1, GamepanelSubpanel2, GamepanelSubpanel3, GamepanelSubpanel4;
 	public GameObject GamepanelSubpanel5, GamepanelSubpanel6, GamepanelSubpanel7;
 	static bool useTextInstruction;
-	public PreferenceSelections Prefs;
 
-	void Start ()
-	{
-		MainCamera = Camera.main;
-		EndPanel = 6;
-		GamePanel = 5;
-		_CourseScript = GameObject.FindGameObjectWithTag ("CoursePlanner").GetComponent<CourseScript> ();
-		Player = GameObject.FindGameObjectWithTag ("Player");
-		ActivePanel = 0;
-		MainPanel ();
-		GameSubpanel ();	
-	}
+	public static PanelOrganizer PanelsRef;
 
 	public static bool UseTextInstruction {
 		get {
@@ -35,9 +23,24 @@ public class PanelOrganizer : MonoBehaviour
 		}
 	}
 
+	void Awake ()
+	{
+		PanelsRef = this;
+	}
+
+	void Start ()
+	{
+		MainCamera = Camera.main;
+		EndPanel = 6;
+		GamePanel = 5;
+		Player = GameObject.FindGameObjectWithTag ("Player");
+		ActivePanel = 0;
+		MainPanel ();
+	}
+
 	void MainPanel ()
 	{
-		Panels = new GameObject[7];
+		Panels = new GameObject[8];
 
 		Panels [0] = Panel0;
 		Panels [1] = Panel1;
@@ -46,12 +49,13 @@ public class PanelOrganizer : MonoBehaviour
 		Panels [4] = Panel4;
 		Panels [5] = GameText;
 		Panels [6] = Panel5;
+		Panels [7] = Panel6;
 	}
 
-	void GameSubpanel ()
+	public void GameSubpanel ()
 	{
 		// should be selected courselength
-		Subpanels = new GameObject[CourseScript.CourseLength];
+		Subpanels = new GameObject[PreferenceSelections.PlayerInstance.CourseLength];
 
 		Subpanels [0] = GamepanelSubpanel1;
 		Subpanels [1] = GamepanelSubpanel2;
@@ -72,7 +76,7 @@ public class PanelOrganizer : MonoBehaviour
 
 	public void ClearSubpanels ()
 	{
-		for (int i = 0; i < CourseScript.CourseLength; i++) {
+		for (int i = 0; i < PreferenceSelections.PlayerInstance.CourseLength; i++) {
 			Subpanels [i].SetActive (false);
 		}
 	}
@@ -105,7 +109,7 @@ public class PanelOrganizer : MonoBehaviour
 
 	public void GameStart ()
 	{
-
+		GameSubpanel ();
 		Lives = new GameObject[GameManager.Life];
 		Lives [0] = Health0;
 		Lives [1] = Health1;
@@ -149,7 +153,7 @@ public class PanelOrganizer : MonoBehaviour
 		if (!Panels [ActivePanel].activeSelf)
 			Panels [ActivePanel].SetActive (true);
 
-		//if (GameManager.Life == 0 && ActivePanel == GamePanel)
+		//if (GameManager.GameManagerRef.Life == 0 && ActivePanel == GamePanel)
 		//SetPanel (EndPanel);
 
 		if (ActivePanel == GamePanel) {

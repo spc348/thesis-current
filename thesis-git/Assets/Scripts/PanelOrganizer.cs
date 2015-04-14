@@ -3,170 +3,226 @@ using UnityEngine;
 
 public class PanelOrganizer : MonoBehaviour
 {
-	public GameObject[] Panels, Lives, Subpanels, Audiotriggers, Markers;
-	public GameObject GameText, Panel0, Panel1, Panel2, Panel3, Panel4, Panel5, Player;
-	public GameObject Health0, Health1, Health2;
-	public int ActivePanel, StartPanel, EndPanel, GamePanel;
-	public CourseScript _CourseScript;
-	public Camera MainCamera;
-	public GameObject GamepanelSubpanel1, GamepanelSubpanel2, GamepanelSubpanel3, GamepanelSubpanel4;
-	public GameObject GamepanelSubpanel5, GamepanelSubpanel6, GamepanelSubpanel7;
-	static bool useTextInstruction;
-	public PreferenceSelections Prefs;
+    public GameObject[] Panels, TokenArray, Subpanels, Audiotriggers, Markers;
+    public GameObject GameText, Panel0, Panel1, Panel2, Panel3, Panel4, Panel5, Panel6, Player;
+    public GameObject Panel7, Panel8, Panel9;
+    public GameObject Token1, Token2, Token3, Token4, Token5, Token6, Token7;
+    public int ActivePanel, StartPanel, EndPanel, GamePanel;
+    public Camera MainCamera;
+    public GameObject GamepanelSubpanel1, GamepanelSubpanel2, GamepanelSubpanel3, GamepanelSubpanel4;
+    public GameObject GamepanelSubpanel5, GamepanelSubpanel6, GamepanelSubpanel7;
 
-	void Start ()
-	{
-		MainCamera = Camera.main;
-		EndPanel = 6;
-		GamePanel = 5;
-		_CourseScript = GameObject.FindGameObjectWithTag ("CoursePlanner").GetComponent<CourseScript> ();
-		Player = GameObject.FindGameObjectWithTag ("Player");
-		ActivePanel = 0;
-		MainPanel ();
-		GameSubpanel ();	
-	}
+    public GameObject altSubpanel1, altSubpanel2, altSubpanel3, altSubpanel4;
+    public GameObject altSubpanel5, altSubpanel6, altSubpanel7;
 
-	public static bool UseTextInstruction {
-		get {
-			return useTextInstruction;
-		}
-		set {
-			useTextInstruction = value;
-		}
-	}
+    public GameObject PromptPanel1, PromptPanel2, PromptPanel3, PromptPanel4;
+    public GameObject altPromptPanel1, altPromptPanel2, altPromptPanel3, altPromptPanel4;
 
-	void MainPanel ()
-	{
-		Panels = new GameObject[7];
+    public static bool useTextInstruction;
 
-		Panels [0] = Panel0;
-		Panels [1] = Panel1;
-		Panels [2] = Panel2;
-		Panels [3] = Panel3;
-		Panels [4] = Panel4;
-		Panels [5] = GameText;
-		Panels [6] = Panel5;
-	}
+    public static PanelOrganizer PanelsRef;
 
-	void GameSubpanel ()
-	{
-		// should be selected courselength
-		Subpanels = new GameObject[CourseScript.CourseLength];
+    public static bool UseSymbInstruction
+    {
+        get
+        {
+            return useTextInstruction;
+        }
+        set
+        {
+            useTextInstruction = value;
+        }
+    }
 
-		Subpanels [0] = GamepanelSubpanel1;
-		Subpanels [1] = GamepanelSubpanel2;
-		Subpanels [2] = GamepanelSubpanel3;
-		Subpanels [3] = GamepanelSubpanel4;
-		Subpanels [4] = GamepanelSubpanel5;
-		Subpanels [5] = GamepanelSubpanel6;
-		Subpanels [6] = GamepanelSubpanel7;
+    void Awake()
+    {
+        PanelsRef = this;
+    }
 
-		Subpanels [0].SetActive (false);
-		Subpanels [1].SetActive (false);
-		Subpanels [2].SetActive (false);
-		Subpanels [3].SetActive (false);
-		Subpanels [4].SetActive (false);
-		Subpanels [5].SetActive (false);
-		Subpanels [6].SetActive (false);
-	}
+    void Start()
+    {
+        MainCamera = Camera.main;
+        EndPanel = 6;
+        GamePanel = 5;
+        Player = GameObject.FindGameObjectWithTag("Player");
+        ActivePanel = 0;
+        LoadMainPanel();
 
-	public void ClearSubpanels ()
-	{
-		for (int i = 0; i < CourseScript.CourseLength; i++) {
-			Subpanels [i].SetActive (false);
-		}
-	}
+        TokenArray = new GameObject[CourseScript.CourseLength];
+        TokenArray[0] = Token1;
+        TokenArray[1] = Token2;
+        TokenArray[2] = Token3;
+        TokenArray[3] = Token4;
+        TokenArray[4] = Token5;
+        TokenArray[5] = Token6;
+        TokenArray[6] = Token7;
+    }
 
-	public void InitGameSubpanel (int panel)
-	{
-		ClearSubpanels ();
+    void LoadMainPanel()
+    {
+        Panels = new GameObject[11];
 
-		Subpanels [panel].SetActive (true);
+        Panels[0] = Panel0;
+        Panels[1] = Panel1;
+        Panels[2] = Panel2;
+        Panels[3] = Panel3;
+        Panels[4] = Panel4;
+        Panels[5] = GameText;
+        Panels[6] = Panel5;
+        Panels[7] = Panel6;
+        Panels[8] = Panel7;
+        Panels[9] = Panel8;
+        Panels[10] = Panel9;
+    }
 
-	}
+    public void GameSubpanel()
+    {
+        Subpanels = new GameObject[PreferenceSelections.InstanceAttributes.CourseLength + 4];
 
-	public void Restart ()
-	{
-		foreach (var i in Markers) {
-			Destroy (i);
-		}
-		for (int i = 0; i < Lives.Length; i++) {
-			Lives [i].SetActive (true);
-		}
-		SetPanel (StartPanel);
-	}
+        if (PreferenceSelections.InstanceAttributes.UseSymbols)
+        {
+            Subpanels[0] = altSubpanel1;
+            Subpanels[1] = altSubpanel2;
+            Subpanels[2] = altSubpanel3;
+            Subpanels[3] = altSubpanel4;
+            Subpanels[4] = altSubpanel5;
+            Subpanels[5] = altSubpanel6;
+            Subpanels[6] = altSubpanel7;
+            Subpanels[7] = altPromptPanel1; // getting cold
+            Subpanels[8] = altPromptPanel2; // turn around
+            Subpanels[9] = altPromptPanel3; // jaywalking
+            Subpanels[10] = altPromptPanel4; //reward
+        }
+        else
+        {
+            Subpanels[0] = GamepanelSubpanel1;
+            Subpanels[1] = GamepanelSubpanel2;
+            Subpanels[2] = GamepanelSubpanel3;
+            Subpanels[3] = GamepanelSubpanel4;
+            Subpanels[4] = GamepanelSubpanel5;
+            Subpanels[5] = GamepanelSubpanel6;
+            Subpanels[6] = GamepanelSubpanel7;
+            Subpanels[7] = PromptPanel1; // getting cold
+            Subpanels[8] = PromptPanel2; // turn around
+            Subpanels[9] = PromptPanel3; // jaywalking
+            Subpanels[10] = PromptPanel4; // reward
+        }
 
-	public void DrawLivesLeft ()
-	{
-		for (int i = 0; i < Lives.Length; i++) {
-			Lives [i].SetActive (true);
-		}
-	}
+        Subpanels[0].SetActive(false);
+        Subpanels[1].SetActive(false);
+        Subpanels[2].SetActive(false);
+        Subpanels[3].SetActive(false);
+        Subpanels[4].SetActive(false);
+        Subpanels[5].SetActive(false);
+        Subpanels[6].SetActive(false);
+    }
 
-	public void GameStart ()
-	{
+    public void ClearSubpanels()
+    {
+        for (int i = 0; i < PreferenceSelections.InstanceAttributes.CourseLength + 4; i++)
+        {
+            Subpanels[i].SetActive(false);
+        }
+    }
 
-		Lives = new GameObject[GameManager.Life];
-		Lives [0] = Health0;
-		Lives [1] = Health1;
-		Lives [2] = Health2;
+    public void InitGameSubpanel(int panel)
+    {
+        ClearSubpanels();
 
-		DrawLivesLeft ();
+        Subpanels[panel].SetActive(true);
 
-		for (int i = 0; i < Panels.Length; i++) {
-			Panels [i].SetActive (false);
-		}
-	}
+    }
 
-	public void AddLife ()
-	{
-		GameManager.Life++;
-	}
+    public void Restart()
+    {
+        foreach (var i in Markers)
+        {
+            Destroy(i);
+        }
 
-	public void SubLife ()
-	{
-		GameManager.Life--;
-		Lives [GameManager.Life].SetActive (false);
-	}
+        ClearTokens();
 
-	public void SetPanel (int active)
-	{
-		ActivePanel = active;
-		ClearPanels (active);
-	}
+        SetPanel(StartPanel);
+    }
 
-	void ClearPanels (int active)
-	{
-		for (int i = 0; i < Panels.Length; i++) {
-			if (i != active) {
-				Panels [i].SetActive (false);
-			}
-		}
-	}
+    public void GameStart()
+    {
+        GameSubpanel();
+        ClearPanels();
+        ClearTokens();
+    }
 
-	void Update ()
-	{
-		if (!Panels [ActivePanel].activeSelf)
-			Panels [ActivePanel].SetActive (true);
+    public void AddToken()
+    {
+        bool flag = false;
+        for (int i = 0; i < TokenArray.Length; i++)
+        {
+            if (!TokenArray[i].activeSelf && !flag)
+            {
+                TokenArray[i].SetActive(true);
+                flag = true;
+            }
+        }
+    }
 
-		//if (GameManager.Life == 0 && ActivePanel == GamePanel)
-		//SetPanel (EndPanel);
+    void ClearTokens()
+    {
+        for (int i = 0; i < TokenArray.Length; i++)
+        {
+            TokenArray[i].SetActive(false);
+        }
+    }
 
-		if (ActivePanel == GamePanel) {
-			Player.GetComponent<Collider> ().enabled = true;
-			MainCamera.enabled = true;
-		} else {
-			MainCamera.enabled = false;
-			Player.GetComponent<Collider> ().enabled = false;
-		}
+    public void SetPanel(int active)
+    {
+        ActivePanel = active;
+        ClearPanelsExcept(active);
+    }
 
-		if (Input.GetKeyDown (KeyCode.Space)) {
-			ClearSubpanels ();
-		}
-	}
+    void ClearPanels()
+    {
 
-	public void AtFinal ()
-	{
-		SetPanel (EndPanel);
-	}
+        for (int i = 0; i < Panels.Length; i++)
+        {
+            Panels[i].SetActive(false);
+        }
+    }
+
+    void ClearPanelsExcept(int active)
+    {
+        for (int i = 0; i < Panels.Length; i++)
+        {
+            if (i != active)
+            {
+                Panels[i].SetActive(false);
+            }
+        }
+    }
+
+    void Update()
+    {
+        if (!Panels[ActivePanel].activeSelf)
+            Panels[ActivePanel].SetActive(true);
+
+        if (ActivePanel == GamePanel)
+        {
+            Player.GetComponent<Collider>().enabled = true;
+            MainCamera.enabled = true;
+        }
+        else
+        {
+            MainCamera.enabled = false;
+            Player.GetComponent<Collider>().enabled = false;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            ClearSubpanels();
+        }
+    }
+
+    public void AtFinal()
+    {
+        SetPanel(EndPanel);
+    }
 }

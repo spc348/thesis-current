@@ -17,26 +17,15 @@ public class WalkableTrigger : MonoBehaviour
         if (other.tag == "unWalkable")
         {
             cannot_walk();
-            //Debug.Log("offcourse but color change isnt working");
         }
     }
+
     void OnTriggerStay(Collider other)
     {
         if (other.tag == "unWalkable")
         {
             cannot_walk();
-            //Debug.Log("offcourse but color change isnt working");
         }
-    }
-
-    public void cannot_walk()
-    {
-        notifier_mesh.material.color = Color.red;
-    }
-
-    public void can_walk()
-    {
-        notifier_mesh.material.color = Color.green;
     }
 
     void OnTriggerExit(Collider other)
@@ -44,7 +33,17 @@ public class WalkableTrigger : MonoBehaviour
         if (other.tag == "unWalkable")
         {
             can_walk();
-            //Debug.Log("on course but color change isnt working");
         }
+    }
+
+    public void cannot_walk()
+    {
+        notifier_mesh.material.color = Color.red;
+        StartCoroutine(CourseScript.CourseRef.PromptRoutine(9));
+    }
+
+    public void can_walk()
+    {
+        notifier_mesh.material.color = Color.green;
     }
 }

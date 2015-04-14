@@ -3,41 +3,52 @@ using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
-	public PreferenceSelections Preferences;
-	public PlayerScript PlayerScript;
 	public bus_movement BusScript;
-	public PanelOrganizer Panels;
-	public CourseScript Course;
 	public GameObject Player, Bus, Cat;
-	public static int Life;
+	public static int Tokens;
 	public Crossing Crossing;
+
+    public static bool GameOn;
+	public static GameManager GameManagerRef;
+
+	void Awake ()
+	{
+		GameManagerRef = this;
+        GameOn = false;
+	}
 
 	void Start ()
 	{
-		Panels = GameObject.FindGameObjectWithTag ("PanelOrganizer").GetComponent<PanelOrganizer> ();
-		Course = GameObject.FindGameObjectWithTag ("CoursePlanner").GetComponent<CourseScript> ();
-		PlayerScript = Player.GetComponent<PlayerScript> ();
 		BusScript = Bus.GetComponent<bus_movement> ();
 	}
 	
 	public void StartGame ()
 	{
-		Life = 3;
-		Panels.GameStart ();
-		Course.GameStart ();
-		PlayerScript.Reset ();
+        GameOn = true;
+		Tokens = 0; 
+		CourseScript.CourseRef.GameStart ();
+		PanelOrganizer.PanelsRef.GameStart ();
+		PlayerScript.PlayerRef.Reset ();
 		StartCoroutine (BusScript.drive ());
 	}
 
+    public void EndGame()
+    {
+        GameOn = false;
+        PreferenceSelections.PrefsRef.LogData();
+        PreferenceSelections.PrefsRef.ClearData();
+    }
+
 	public void ResetGame ()
 	{
-		Preferences.MakePlayerInstace ();
-		Life = 3;
-		Panels.Restart ();
-		Course.Restart ();
+        GameOn = true;
+		PreferenceSelections.PrefsRef.MakePlayerInstance ();
+        Tokens = 0;
+		PanelOrganizer.PanelsRef.Restart ();
+		CourseScript.CourseRef.Restart ();
 		BusScript.restart ();
 		BusScript.drive ();
-		PlayerScript.Reset ();
+		PlayerScript.PlayerRef.Reset ();
 		StartCoroutine (BusScript.drive ());
 	}
 }

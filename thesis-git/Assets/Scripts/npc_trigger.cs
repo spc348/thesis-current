@@ -15,7 +15,7 @@ public class npc_trigger : MonoBehaviour {
             npc.transform.Translate(Vector3.forward * speed * Time.deltaTime);
             npc.AddComponent<SphereCollider>();
             SphereCollider sc = npc.GetComponent<SphereCollider>();
-            sc.radius = 1;
+            sc.radius = 3;
         }
     }
 
@@ -23,7 +23,7 @@ public class npc_trigger : MonoBehaviour {
     {
         if(other.tag == "Player")
         {
-            Destroy(npc);
+            PreferenceSelections.InstanceData.CollidePedestrian += 1;
         }
     }
 

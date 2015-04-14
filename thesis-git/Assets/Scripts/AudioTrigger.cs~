@@ -1,22 +1,22 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class AudioTrigger : MonoBehaviour
 {
-	public CourseScript Script;
-	public PlayerScript Movement;
 	public GameObject Player;
 	public CheckpointScript Scoreboard;
-	public AudioClip Clip;
+	public AudioClip Direction;
 	public AudioClip LandmarkName;
-	private AudioSource source;
+	AudioSource source;
 	public bool HasPlayed, Final;
 	public bool AtCheckPoint;
-	public PanelOrganizer Panels;
-	public int Place, Duration; 
+	public int Place;
+	public float Duration;
+
 	static float audioRoutineLength;
 	static float repeatPanelTime;
-	public PreferenceSelections Prefs;
+
+	public static AudioTrigger AudioRef;
 
 	public static float AudioRoutineLength {
 		get {
@@ -38,34 +38,38 @@ public class AudioTrigger : MonoBehaviour
 
 	void Awake ()
 	{
+		AudioRef = this;
 		Player = GameObject.FindGameObjectWithTag ("Player");
-		Movement = Player.GetComponent<PlayerScript> ();
-		Panels = GameObject.FindGameObjectWithTag ("PanelOrganizer").GetComponent<PanelOrganizer> ();
-		Script = GameObject.FindGameObjectWithTag ("CoursePlanner").GetComponent<CourseScript> ();
 		source = GetComponent<AudioSource> ();
-		Prefs = GameObject.FindGameObjectWithTag ("Prefs").GetComponent<PreferenceSelections> ();
 		HasPlayed = false;
 	}
 
 	void Start ()
 	{
 		AtCheckPoint = false;
+		audioRoutineLength = 2f;
+		repeatPanelTime = 30;
 	}
-
 
 	void FlipPlayedBool ()
 	{
 		HasPlayed = !HasPlayed;
 	}
 
-	IEnumerator playAudioRoutine (AudioClip clip)
+	IEnumerator playAudioRoutine (AudioClip direction, AudioClip landmark)
 	{
 		if (!source.isPlaying) {
-			source.PlayOneShot (clip);
+			source.PlayOneShot (direction);
+			yield return new WaitForSeconds (direction.length);
 
-			yield return new WaitForSeconds (clip.length + Prefs._PlayerInstance.PlayAudioTime);
-			Panels.ClearSubpanels ();
-			Movement.enabled = true;
+			source.PlayOneShot (CourseScript.CourseRef.ClipLibrary ["atThe"]);
+			yield return new WaitForSeconds (CourseScript.CourseRef.ClipLibrary ["atThe"].length);
+
+			source.PlayOneShot (landmark);
+			yield return new WaitForSeconds (landmark.length + PreferenceSelections.PlayerInstance.PlayAudioTime);
+
+			PanelOrganizer.PanelsRef.ClearSubpanels ();
+			PlayerScript.PlayerRef.enabled = true;
 		}
 	}
 
@@ -80,21 +84,21 @@ public class AudioTrigger : MonoBehaviour
 
 			Debug.Log (Place);
 			AtCheckPoint = true;
-			Script.AtCheckPoint = true;
+			CourseScript.CourseRef.AtCheckPoint = true;
 
-			Script.CurrentMarker = Place;
+			CourseScript.CourseRef.ApproachedMarker = Place;
 
 			if (!HasPlayed) {
-				Movement.enabled = false;
-				StartCoroutine (playAudioRoutine (Clip));
-				Panels.InitGameSubpanel (Place);
+				PlayerScript.PlayerRef.enabled = false;
+				StartCoroutine (playAudioRoutine (Direction, LandmarkName));
+				PanelOrganizer.PanelsRef.InitGameSubpanel (Place);
 				HasPlayed = true;
 			}
 
-			Invoke ("FlipPlayedBool", Prefs._PlayerInstance.ShowPanelTime); 
-
+			Invoke ("FlipPlayedBool", PreferenceSelections.PlayerInstance.ShowPanelTime); 
+			
 			if (Final) {
-				Panels.AtFinal ();
+				PanelOrganizer.PanelsRef.AtFinal ();
 			}
 		}
 	}
@@ -102,8 +106,8 @@ public class AudioTrigger : MonoBehaviour
 	void OnTriggerExit (Collider other)
 	{
 		if (other.tag == "Player") {
-			Script.AtCheckPoint = false;
-			Panels.ClearSubpanels ();
+			CourseScript.CourseRef.AtCheckPoint = false;
+			PanelOrganizer.PanelsRef.ClearSubpanels ();
 		}
 		Debug.Log (Place + " " + System.DateTime.Now.ToLongTimeString ());
 	}

@@ -6,15 +6,11 @@ public class PlayerScript : MonoBehaviour
 
 	static float speed;
 	static float rotSpeed;
-	public Vector3 PlayerStartPosition;
-	public Quaternion PlayerStartRotation;
-		
-	void Start ()
-	{
-		PlayerStartPosition = transform.position;
-		PlayerStartRotation = transform.rotation;
-	}
+	public static Vector3 PlayerStartPosition;
+	public static Quaternion PlayerStartRotation;
 
+	public static PlayerScript PlayerRef;
+	
 	public static float Speed {
 		get {
 			return speed;
@@ -23,7 +19,7 @@ public class PlayerScript : MonoBehaviour
 			speed = value;
 		}
 	}
-
+	
 	public static float RotSpeed {
 		get {
 			return rotSpeed;
@@ -33,6 +29,20 @@ public class PlayerScript : MonoBehaviour
 		}
 	}
 
+	void Awake ()
+	{
+		PlayerRef = this;
+	}
+
+	void Start ()
+	{
+		PlayerStartPosition = transform.position;
+		PlayerStartRotation = transform.rotation;
+		speed = 42f;
+		rotSpeed = 72f;
+	}
+
+
 	public void Reset ()
 	{
 		transform.position = PlayerStartPosition;
@@ -41,7 +51,9 @@ public class PlayerScript : MonoBehaviour
 		
 	void FixedUpdate ()
 	{
-		Move ();
+		if (PreferenceSelections.PrefsSelected) {
+			Move ();
+		}
 	}
 
 	void Move ()
@@ -57,7 +69,7 @@ public class PlayerScript : MonoBehaviour
 		}
 
 		if (Input.GetKey (KeyCode.E)) {
-			transform.Rotate (Vector3.up * rotSpeed * Time.deltaTime);
+			transform.Rotate (Vector3.up * rotSpeed* Time.deltaTime);
 		}
         
 		if (Input.touchCount > 0 && Input.GetTouch (0).phase == TouchPhase.Moved) {

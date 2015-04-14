@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 public class CheckPrefsComplete : MonoBehaviour
 {
-	public PreferenceSelections Preferences;
 	public Text Text;
 	Button button;
 
