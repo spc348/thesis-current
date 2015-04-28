@@ -16,10 +16,10 @@ public class CheckPrefsComplete : MonoBehaviour
 	void Update ()
 	{
 		if (PreferenceSelections.PrefsSelected) {
-			button.enabled = true;
+			button.interactable = true;
 			Text.text = "Press play to continue";
 		} else {
-			button.enabled = false;
+			button.interactable = false;
 			Text.text = "Please address all settings";
 		}
 	}

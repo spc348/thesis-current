@@ -9,6 +9,7 @@ public class CheckpointScript : MonoBehaviour
     public bool flag;
 
     public static CheckpointScript CheckPointRef;
+    public bool ReachedNewMarker;
 
     void Awake()
     {
@@ -20,23 +21,31 @@ public class CheckpointScript : MonoBehaviour
         Times = new float[CourseScript.CourseLength];
         CurrentPlace = 0;
         flag = false;
+        ReachedNewMarker = false;
     }
 
     void LateUpdate()
     {
-        if (CourseScript.CourseRef.AtCheckPoint && !CourseScript.CourseRef.CheckOffTrack())
+        if (CourseScript.CourseRef.AtCheckPoint)
         {
-            if (!flag)
+            if (!CourseScript.CourseRef.CheckOffTrack())
             {
-                CurrentPlace++;
-                flag = true;
+                if (!flag && ReachedNewMarker)
+                {
+                    CurrentPlace++;
+                    flag = true;
+                }
             }
         }
-        else if(PanelOrganizer.PanelsRef.ActivePanel == PanelOrganizer.PanelsRef.GamePanel && GameManager.GameOn)
+        else if (GameManager.GameOn)
         {
-            Times[CurrentPlace] += Time.deltaTime;
+            if (PanelOrganizer.PanelsRef.ActivePanel == PanelOrganizer.PanelsRef.GamePanel)
+            {
+                Times[CurrentPlace] += Time.deltaTime;
 
-            flag = false;
+                flag = false;
+                ReachedNewMarker = false;
+            }
         }
     }
 
@@ -45,9 +54,9 @@ public class CheckpointScript : MonoBehaviour
         float n = 0;
         for (int i = 0; i < Times.Length; i++)
         {
-            n += Times[i];     
+            n += Times[i];
         }
-        return n/Times.Length;
+        return n / Times.Length;
     }
 
 

@@ -1,5 +1,9 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Net;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PanelOrganizer : MonoBehaviour
 {
@@ -15,22 +19,30 @@ public class PanelOrganizer : MonoBehaviour
     public GameObject altSubpanel1, altSubpanel2, altSubpanel3, altSubpanel4;
     public GameObject altSubpanel5, altSubpanel6, altSubpanel7;
 
-    public GameObject PromptPanel1, PromptPanel2, PromptPanel3, PromptPanel4;
-    public GameObject altPromptPanel1, altPromptPanel2, altPromptPanel3, altPromptPanel4;
-
-    public static bool useTextInstruction;
-
+    static bool useSymInstruction;
+    private static float panelFade;
     public static PanelOrganizer PanelsRef;
+    public GameObject[] UtilPanelsArray;
+    public GameObject utilPanel1, utilPanel2, utilPanel3, utilPanel4;
+
+    public static float PanelFade
+    {
+        get
+        {
+            return panelFade;
+        }
+        set { panelFade = value; }
+    }
 
     public static bool UseSymbInstruction
     {
         get
         {
-            return useTextInstruction;
+            return useSymInstruction;
         }
         set
         {
-            useTextInstruction = value;
+            useSymInstruction = value;
         }
     }
 
@@ -41,13 +53,18 @@ public class PanelOrganizer : MonoBehaviour
 
     void Start()
     {
+        panelFade = 2f;
         MainCamera = Camera.main;
         EndPanel = 6;
         GamePanel = 5;
         Player = GameObject.FindGameObjectWithTag("Player");
         ActivePanel = 0;
         LoadMainPanel();
+        LoadTokens();
+    }
 
+    void LoadTokens()
+    {
         TokenArray = new GameObject[CourseScript.CourseLength];
         TokenArray[0] = Token1;
         TokenArray[1] = Token2;
@@ -61,7 +78,6 @@ public class PanelOrganizer : MonoBehaviour
     void LoadMainPanel()
     {
         Panels = new GameObject[11];
-
         Panels[0] = Panel0;
         Panels[1] = Panel1;
         Panels[2] = Panel2;
@@ -75,11 +91,56 @@ public class PanelOrganizer : MonoBehaviour
         Panels[10] = Panel9;
     }
 
+    public void UtilPanels()
+    {
+        UtilPanelsArray = new GameObject[4];
+        UtilPanelsArray[0] = utilPanel1;
+        UtilPanelsArray[1] = utilPanel2;
+        UtilPanelsArray[2] = utilPanel3;
+        UtilPanelsArray[3] = utilPanel4;
+
+        foreach (var i in UtilPanelsArray)
+        {
+            i.SetActive(false);
+        }
+    }
+
+    public void ClearUtils()
+    {
+        foreach (var o in UtilPanelsArray)
+        {
+            o.SetActive(false);
+        }
+    }
+    public void InitUtilPanel(int prompt)
+    {
+        ClearUtils();
+        bool subpanel = false;
+        
+        foreach (var o in Subpanels)
+        {
+            if (o.activeSelf) subpanel = true;
+        }
+        if (!subpanel)
+        {
+            UtilPanelsArray[prompt].SetActive(true);
+        }
+
+        //start at the bottom
+        UtilPanelsArray[prompt].GetComponent<Image>().CrossFadeAlpha(0f, 0f, false);
+        UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(0f, 0f, false);
+        UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(0f, 0f, false);
+        //work to the top
+        UtilPanelsArray[prompt].GetComponent<Image>().CrossFadeAlpha(1f, 1f, false);
+        UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(1f, 1f, false);
+        UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(1f, 1f, false);
+    }
+
     public void GameSubpanel()
     {
-        Subpanels = new GameObject[PreferenceSelections.InstanceAttributes.CourseLength + 4];
+        Subpanels = new GameObject[PreferenceSelections.InstanceAttributes.CourseLength];
 
-        if (PreferenceSelections.InstanceAttributes.UseSymbols)
+        if (useSymInstruction)
         {
             Subpanels[0] = altSubpanel1;
             Subpanels[1] = altSubpanel2;
@@ -88,10 +149,6 @@ public class PanelOrganizer : MonoBehaviour
             Subpanels[4] = altSubpanel5;
             Subpanels[5] = altSubpanel6;
             Subpanels[6] = altSubpanel7;
-            Subpanels[7] = altPromptPanel1; // getting cold
-            Subpanels[8] = altPromptPanel2; // turn around
-            Subpanels[9] = altPromptPanel3; // jaywalking
-            Subpanels[10] = altPromptPanel4; //reward
         }
         else
         {
@@ -102,34 +159,33 @@ public class PanelOrganizer : MonoBehaviour
             Subpanels[4] = GamepanelSubpanel5;
             Subpanels[5] = GamepanelSubpanel6;
             Subpanels[6] = GamepanelSubpanel7;
-            Subpanels[7] = PromptPanel1; // getting cold
-            Subpanels[8] = PromptPanel2; // turn around
-            Subpanels[9] = PromptPanel3; // jaywalking
-            Subpanels[10] = PromptPanel4; // reward
         }
 
-        Subpanels[0].SetActive(false);
-        Subpanels[1].SetActive(false);
-        Subpanels[2].SetActive(false);
-        Subpanels[3].SetActive(false);
-        Subpanels[4].SetActive(false);
-        Subpanels[5].SetActive(false);
-        Subpanels[6].SetActive(false);
+        foreach (var o in Subpanels)
+        {
+            o.SetActive(false);
+            o.GetComponent<Image>().CrossFadeAlpha(0f, 0f, false);
+        }
     }
 
     public void ClearSubpanels()
     {
-        for (int i = 0; i < PreferenceSelections.InstanceAttributes.CourseLength + 4; i++)
-        {
-            Subpanels[i].SetActive(false);
-        }
+        foreach (var o in Subpanels)
+            if (Subpanels != null) o.SetActive(false);
     }
 
     public void InitGameSubpanel(int panel)
     {
         ClearSubpanels();
-
         Subpanels[panel].SetActive(true);
+        //start at the bottom
+        Subpanels[panel].GetComponent<Image>().CrossFadeAlpha(0f, 0f, false);
+        Subpanels[panel].GetComponentInChildren<Text>().CrossFadeAlpha(0f, 0f, false);
+        Subpanels[panel].GetComponentInChildren<Image>().CrossFadeAlpha(0f, 0f, false);
+        //work to the top
+        Subpanels[panel].GetComponent<Image>().CrossFadeAlpha(1f, 1f, false);
+        Subpanels[panel].GetComponentInChildren<Text>().CrossFadeAlpha(1f, 1f, false);
+        Subpanels[panel].GetComponentInChildren<Image>().CrossFadeAlpha(1f, 1f, false);
 
     }
 
@@ -139,37 +195,28 @@ public class PanelOrganizer : MonoBehaviour
         {
             Destroy(i);
         }
-
         ClearTokens();
-
         SetPanel(StartPanel);
     }
 
     public void GameStart()
     {
         GameSubpanel();
+        UtilPanels();
         ClearPanels();
         ClearTokens();
     }
 
-    public void AddToken()
+    public void AddToken(int place)
     {
-        bool flag = false;
-        for (int i = 0; i < TokenArray.Length; i++)
-        {
-            if (!TokenArray[i].activeSelf && !flag)
-            {
-                TokenArray[i].SetActive(true);
-                flag = true;
-            }
-        }
+        TokenArray[place].SetActive(true);
     }
 
     void ClearTokens()
     {
-        for (int i = 0; i < TokenArray.Length; i++)
+        foreach (var t in TokenArray)
         {
-            TokenArray[i].SetActive(false);
+            t.SetActive(false);
         }
     }
 
@@ -206,13 +253,13 @@ public class PanelOrganizer : MonoBehaviour
 
         if (ActivePanel == GamePanel)
         {
-            Player.GetComponent<Collider>().enabled = true;
+            //Player.GetComponent<Collider>().enabled = true;
             MainCamera.enabled = true;
         }
         else
         {
             MainCamera.enabled = false;
-            Player.GetComponent<Collider>().enabled = false;
+            //Player.GetComponent<Collider>().enabled = false;
         }
 
         if (Input.GetKeyDown(KeyCode.Space))
@@ -225,4 +272,6 @@ public class PanelOrganizer : MonoBehaviour
     {
         SetPanel(EndPanel);
     }
+
+    
 }

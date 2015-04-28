@@ -13,12 +13,4 @@ public class npc_manager : MonoBehaviour {
         npcs[1] = npc2;
         npcs[2] = npc3;
     }
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-
-
-
 }

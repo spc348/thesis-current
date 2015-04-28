@@ -20,7 +20,7 @@ public class CourseScript : MonoBehaviour
     public GameObject M1, M2, M3, M4, M5, M6, Cat;
     GameObject[] Markers;
     public float DistToNext;
-
+    bool landmarkFlag;
     bool LostFlag;
 
     public static CourseScript CourseRef;
@@ -56,53 +56,61 @@ public class CourseScript : MonoBehaviour
         NextMarker = 0;
         PresentMarker = 0;
         LifeFlag = false;
+        landmarkFlag = false;
         AtCheckPoint = false;
         LostFlag = false;
         NotifierAudio = Notifier.GetComponent<AudioSource>();
     }
 
-    public IEnumerator PromptRoutine(int Prompt)
+    public IEnumerator PromptRoutine(int prompt, float duration)
     {
-        PanelOrganizer.PanelsRef.InitGameSubpanel(Prompt);
+        PanelOrganizer.PanelsRef.InitUtilPanel(prompt);
 
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(duration);
 
-        PanelOrganizer.PanelsRef.ClearSubpanels();
+        PanelOrganizer.PanelsRef.ClearUtils();
     }
 
     void LateUpdate()
     {
-
-        if (AtCheckPoint)
-        { // at a landmark
-            PresentMarker = ApproachedMarker; // observe current location from marker
-            NextMarker = ChartNextMove(PresentMarker); // determine where to go next
-            if (CheckOffTrack())
+        if (GameManager.GameOn)
+        {
+            if (AtCheckPoint)
             {
-                PreferenceSelections.PrefsRef.SkippedLandmark += 1;
-                StartCoroutine(PromptRoutine(8));
+                PresentMarker = ApproachedMarker;
+                NextMarker = ChartNextMove(PresentMarker);
+                if (CheckOffTrack() && !landmarkFlag)
+                {
+                    PreferenceSelections.PrefsRef.SkippedLandmark += 1;
+                    StartCoroutine(PromptRoutine(0, PanelOrganizer.PanelFade));
+                    landmarkFlag = true;
+                }
             }
-        }
-        else
-        {
-            PreviousMarker = PresentMarker;
-        }
+            else
+            {
+                PreviousMarker = PresentMarker;
+                landmarkFlag = false;
+            }
 
-        if (PanelOrganizer.PanelsRef.ActivePanel == PanelOrganizer.PanelsRef.GamePanel && PreferenceSelections.PrefsSelected)
-        {
             if (InitDistanceTracking() > 40f)
             {
-                if(!LostFlag)
+                if (!LostFlag)
                 {
                     PreferenceSelections.PrefsRef.Lost += 1;
+                    StartCoroutine(PromptRoutine(1, PanelOrganizer.PanelFade));
                     LostFlag = true;
                 }
-                StartCoroutine(PromptRoutine(7));
+                Invoke("ResetLostFlag",4f);
             }
         }
     }
 
-    void loadMarkerStandins() //load markers from the scene to the loaded markers array
+    void ResetLostFlag()
+    {
+        LostFlag = true;
+    }
+
+    void LoadMarkerStandins() //load markers from the scene to the loaded markers array
     {
         LoadedMarkers = new GameObject[courseLength];
         LoadedMarkers[0] = M1;
@@ -117,7 +125,7 @@ public class CourseScript : MonoBehaviour
     public void GameStart() // Booting the game
     {
         MarkersList = new List<GameObject>(); // list of markers in the game
-        loadMarkerStandins(); // using the positions of stand ins
+        LoadMarkerStandins(); // using the positions of stand ins
         ClearMarkers(); // clear any relic markers
         MakeAudioLibrary(); //assemble the audio clip libary from resources folder
         MakeCourse(DesignCourse(MarkerCollection())); // insert prefab markers into position, in the designed order, with the
@@ -138,7 +146,6 @@ public class CourseScript : MonoBehaviour
          * make a separate 'the' clip 
          * 
          * make a 'go to' clip
-         * 
          * 
          */
 
@@ -200,23 +207,23 @@ public class CourseScript : MonoBehaviour
     {
         // reference the correct audio files using easy to read labels
 
-        string[] SevenCourseDirections = new string[courseLength];
-        SevenCourseDirections[0] = "forward";
-        SevenCourseDirections[1] = "turn left";
-        SevenCourseDirections[2] = "turn right";
-        SevenCourseDirections[3] = "turn right";
-        SevenCourseDirections[4] = "turn left";
-        SevenCourseDirections[5] = "turn left";
-        SevenCourseDirections[6] = "turn right";
+        string[] sevenCourseDirections = new string[courseLength];
+        sevenCourseDirections[0] = "forward";
+        sevenCourseDirections[1] = "turn left";
+        sevenCourseDirections[2] = "turn right";
+        sevenCourseDirections[3] = "turn right";
+        sevenCourseDirections[4] = "turn left";
+        sevenCourseDirections[5] = "turn right";
+        sevenCourseDirections[6] = "great job";
 
-        string[] SevenCourseLandmarks = new string[courseLength];
-        SevenCourseLandmarks[0] = "streetlamp";
-        SevenCourseLandmarks[1] = "crosswalk";
-        SevenCourseLandmarks[2] = "trashcan";
-        SevenCourseLandmarks[3] = "crosswalk";
-        SevenCourseLandmarks[4] = "hydrant";
-        SevenCourseLandmarks[5] = "Missy";
-        SevenCourseLandmarks[6] = "great job";
+        string[] sevenCourseLandmarks = new string[courseLength];
+        sevenCourseLandmarks[0] = "streetlamp";
+        sevenCourseLandmarks[1] = "crosswalk";
+        sevenCourseLandmarks[2] = "trashcan";
+        sevenCourseLandmarks[3] = "crosswalk";
+        sevenCourseLandmarks[4] = "hydrant";
+        sevenCourseLandmarks[5] = "Missy";
+        sevenCourseLandmarks[6] = "Missy";
 
         foreach (KeyValuePair<int, Vector3> kvp in positions)
         {
@@ -225,8 +232,8 @@ public class CourseScript : MonoBehaviour
             MarkersList.Add(marker);
             marker.tag = "marker";
             AudioScript = marker.GetComponent<AudioTrigger>();
-            AudioScript.Direction = ClipLibrary[SevenCourseDirections[kvp.Key]];
-            AudioScript.LandmarkName = ClipLibrary[SevenCourseLandmarks[kvp.Key]];
+            AudioScript.Direction = ClipLibrary[sevenCourseDirections[kvp.Key]];
+            AudioScript.LandmarkName = ClipLibrary[sevenCourseLandmarks[kvp.Key]];
             AudioScript.Place = kvp.Key;
             AudioScript.HasPlayed = false;
 
@@ -237,9 +244,8 @@ public class CourseScript : MonoBehaviour
 
     public void AtFinal()
     {
-        GameManager.GameManagerRef.EndGame();
         PanelOrganizer.PanelsRef.SetPanel(PanelOrganizer.PanelsRef.EndPanel); //end the game
-
+        GameManager.GameManagerRef.EndGame();
     }
 
     public void ResetFlags()
@@ -259,6 +265,7 @@ public class CourseScript : MonoBehaviour
     {
         return PreviousMarker - PresentMarker > 1 || PresentMarker < PreviousMarker;
     }
+
     // very basic navigational check
     int ChartNextMove(int num)
     {

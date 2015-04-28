@@ -6,6 +6,8 @@ public class PlayerScript : MonoBehaviour
 
 	static float speed;
 	static float rotSpeed;
+    float touchSpeed;
+    float touchRot;
 	public static Vector3 PlayerStartPosition;
 	public static Quaternion PlayerStartRotation;
 
@@ -40,6 +42,8 @@ public class PlayerScript : MonoBehaviour
 		PlayerStartRotation = transform.rotation;
 		speed = 42f;
 		rotSpeed = 72f;
+        touchSpeed = speed / 15f;
+        touchRot = RotSpeed / 15f;
 	}
 
 
@@ -74,8 +78,8 @@ public class PlayerScript : MonoBehaviour
         
 		if (Input.touchCount > 0 && Input.GetTouch (0).phase == TouchPhase.Moved) {
 			Vector2 touchDeltaPosition = Input.GetTouch (0).deltaPosition;
-			transform.Translate (0, 0, touchDeltaPosition.y * speed * Time.deltaTime);
-			transform.Rotate (0, touchDeltaPosition.x * rotSpeed * Time.deltaTime, 0);
+			transform.Translate (0, 0, touchDeltaPosition.y * touchSpeed * Time.fixedDeltaTime);
+			transform.Rotate (0, touchDeltaPosition.x * touchRot * Time.fixedDeltaTime, 0);
 		}
 	}
 }

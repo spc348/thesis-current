@@ -45,7 +45,7 @@ public class PreferenceSelections : MonoBehaviour
 
         if(InstanceAttributes == null)
         {
-            InstanceAttributes = new PlayerAttributes(8f, 2f, 35f, 55f, 7, false, 8f);
+            InstanceAttributes = new PlayerAttributes(8f, 2f, 35f, 55f, 7, true, 8f);
         }
     }
 

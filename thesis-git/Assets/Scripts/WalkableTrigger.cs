@@ -20,14 +20,6 @@ public class WalkableTrigger : MonoBehaviour
         }
     }
 
-    void OnTriggerStay(Collider other)
-    {
-        if (other.tag == "unWalkable")
-        {
-            cannot_walk();
-        }
-    }
-
     void OnTriggerExit(Collider other)
     {
         if (other.tag == "unWalkable")
@@ -39,7 +31,8 @@ public class WalkableTrigger : MonoBehaviour
     public void cannot_walk()
     {
         notifier_mesh.material.color = Color.red;
-        StartCoroutine(CourseScript.CourseRef.PromptRoutine(9));
+        PreferenceSelections.PrefsRef.Jaywalked++;
+        StartCoroutine(CourseScript.CourseRef.PromptRoutine(2, PanelOrganizer.PanelFade));
     }
 
     public void can_walk()

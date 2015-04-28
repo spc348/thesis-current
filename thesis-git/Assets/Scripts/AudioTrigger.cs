@@ -9,7 +9,7 @@ public class AudioTrigger : MonoBehaviour
 	public AudioClip LandmarkName;
 	AudioSource source;
 	public bool HasPlayed, Final;
-	public bool AtCheckPoint;
+	public bool AtCheckPoint, TokenFlag;
 	public int Place;
 	public float Duration;
 
@@ -84,32 +84,33 @@ public class AudioTrigger : MonoBehaviour
 
 			Debug.Log (Place);
 			AtCheckPoint = true;
-			CourseScript.CourseRef.AtCheckPoint = true;
+            CourseScript.CourseRef.AtCheckPoint = true;
 
 			CourseScript.CourseRef.ApproachedMarker = Place;
 
 			if (!HasPlayed) {
+                CheckpointScript.CheckPointRef.ReachedNewMarker = true;
 				PlayerScript.PlayerRef.enabled = false;
 				StartCoroutine (playAudioRoutine (Direction, LandmarkName));
 				PanelOrganizer.PanelsRef.InitGameSubpanel (Place);
-                PanelOrganizer.PanelsRef.AddToken();
+                PanelOrganizer.PanelsRef.AddToken(Place);
 				HasPlayed = true;
 			}
 
-			Invoke ("FlipPlayedBool", PreferenceSelections.InstanceAttributes.RepeatPanelTime); 
-			
-			if (Final) {
-				PanelOrganizer.PanelsRef.AtFinal ();
-			}
+
+			Invoke ("FlipPlayedBool", repeatPanelTime);
+
+		    if (Final)
+		        PanelOrganizer.PanelsRef.AtFinal();
 		}
 	}
 
 	void OnTriggerExit (Collider other)
 	{
 		if (other.tag == "Player") {
-			CourseScript.CourseRef.AtCheckPoint = false;
+            CheckpointScript.CheckPointRef.ReachedNewMarker = true;
+            CourseScript.CourseRef.AtCheckPoint = false;
 			PanelOrganizer.PanelsRef.ClearSubpanels ();
 		}
-		Debug.Log (Place + " " + System.DateTime.Now.ToLongTimeString ());
 	}
 }
