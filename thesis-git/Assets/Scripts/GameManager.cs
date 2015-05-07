@@ -52,7 +52,7 @@ public class GameManager : MonoBehaviour
 
     public void ResumeGame()
     {
-        GameOn = false;
+        GameOn = true;
         PlayerScript.PlayerRef.GetComponent<Collider>().enabled = false;
     }
 

@@ -23,7 +23,7 @@ public class PanelOrganizer : MonoBehaviour
     private static float panelFade;
     public static PanelOrganizer PanelsRef;
     public GameObject[] UtilPanelsArray;
-    public GameObject utilPanel1, utilPanel2, utilPanel3, utilPanel4;
+    public GameObject utilPanel1, utilPanel2, utilPanel3, utilPanel4, utilPanel5;
 
     public static float PanelFade
     {
@@ -93,11 +93,12 @@ public class PanelOrganizer : MonoBehaviour
 
     public void UtilPanels()
     {
-        UtilPanelsArray = new GameObject[4];
+        UtilPanelsArray = new GameObject[5];
         UtilPanelsArray[0] = utilPanel1;
         UtilPanelsArray[1] = utilPanel2;
         UtilPanelsArray[2] = utilPanel3;
         UtilPanelsArray[3] = utilPanel4;
+        UtilPanelsArray[4] = utilPanel5;
 
         foreach (var i in UtilPanelsArray)
         {
@@ -114,10 +115,14 @@ public class PanelOrganizer : MonoBehaviour
     }
     public void InitUtilPanel(int prompt)
     {
-        ClearUtils();
+        //ClearUtils();
         bool subpanel = false;
         
         foreach (var o in Subpanels)
+        {
+            if (o.activeSelf) subpanel = true;
+        }
+        foreach (var o in UtilPanelsArray)
         {
             if (o.activeSelf) subpanel = true;
         }
@@ -128,12 +133,12 @@ public class PanelOrganizer : MonoBehaviour
 
         //start at the bottom
         UtilPanelsArray[prompt].GetComponent<Image>().CrossFadeAlpha(0f, 0f, false);
-        UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(0f, 0f, false);
-        UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(0f, 0f, false);
+        //UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(0f, 0f, false);
+        //UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(0f, 0f, false);
         //work to the top
         UtilPanelsArray[prompt].GetComponent<Image>().CrossFadeAlpha(1f, 1f, false);
-        UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(1f, 1f, false);
-        UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(1f, 1f, false);
+        //UtilPanelsArray[prompt].GetComponentInChildren<Text>().CrossFadeAlpha(1f, 1f, false);
+        //UtilPanelsArray[prompt].GetComponentInChildren<Image>().CrossFadeAlpha(1f, 1f, false);
     }
 
     public void GameSubpanel()

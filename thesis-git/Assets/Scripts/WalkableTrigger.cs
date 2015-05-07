@@ -1,26 +1,25 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class WalkableTrigger : MonoBehaviour
 {
     public Renderer notifier_mesh;
 
-    void Start()
+    private void Start()
     {
         notifier_mesh = GameObject.FindGameObjectWithTag("notifier").GetComponent<Renderer>();
         notifier_mesh.material.color = Color.green;
     }
 
-    void OnTriggerEnter(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-
         if (other.tag == "unWalkable")
         {
             cannot_walk();
+            StartCoroutine(CourseScript.CourseRef.PromptRoutine(2, PanelOrganizer.PanelFade));
         }
     }
 
-    void OnTriggerExit(Collider other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.tag == "unWalkable")
         {
@@ -31,8 +30,6 @@ public class WalkableTrigger : MonoBehaviour
     public void cannot_walk()
     {
         notifier_mesh.material.color = Color.red;
-        PreferenceSelections.PrefsRef.Jaywalked++;
-        StartCoroutine(CourseScript.CourseRef.PromptRoutine(2, PanelOrganizer.PanelFade));
     }
 
     public void can_walk()

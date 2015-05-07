@@ -24,27 +24,30 @@ public class CheckpointScript : MonoBehaviour
         ReachedNewMarker = false;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
-        if (CourseScript.CourseRef.AtCheckPoint)
+        if (GameManager.GameOn)
         {
-            if (!CourseScript.CourseRef.CheckOffTrack())
+            if (CourseScript.CourseRef.AtCheckPoint)
             {
-                if (!flag && ReachedNewMarker)
+                if (!CourseScript.CourseRef.CheckOffTrack())
                 {
-                    CurrentPlace++;
-                    flag = true;
+                    if (!flag && ReachedNewMarker)
+                    {
+                        CurrentPlace++;
+                        flag = true;
+                    }
                 }
             }
-        }
-        else if (GameManager.GameOn)
-        {
-            if (PanelOrganizer.PanelsRef.ActivePanel == PanelOrganizer.PanelsRef.GamePanel)
+            else if (GameManager.GameOn)
             {
-                Times[CurrentPlace] += Time.deltaTime;
+                if (PanelOrganizer.PanelsRef.ActivePanel == PanelOrganizer.PanelsRef.GamePanel)
+                {
+                    Times[CurrentPlace] += Time.deltaTime;
 
-                flag = false;
-                ReachedNewMarker = false;
+                    flag = false;
+                    ReachedNewMarker = false;
+                }
             }
         }
     }

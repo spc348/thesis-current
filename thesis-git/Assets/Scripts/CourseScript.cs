@@ -1,57 +1,41 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class CourseScript : MonoBehaviour
 {
-
-    public Dictionary<int, Vector3> Positions;
-    public Dictionary<string, AudioClip> ClipLibrary;
-    public List<GameObject> MarkersList;
-    public GameObject[] LoadedMarkers, Audiotriggers;
-    public GameObject Player, CheckPrefab, Notifier;
-    public AudioSource NotifierAudio;
-    public int NextMarker, PresentMarker, PreviousMarker, ApproachedMarker;
-
-    public AudioTrigger AudioScript;
-
-    public bool LifeFlag, AtCheckPoint;
-    static int courseLength;
-    public GameObject M1, M2, M3, M4, M5, M6, Cat;
-    GameObject[] Markers;
-    public float DistToNext;
-    bool landmarkFlag;
-    bool LostFlag;
-
     public static CourseScript CourseRef;
+    public AudioTrigger AudioScript;
+    public Dictionary<string, AudioClip> ClipLibrary;
+    public float DistToNext;
+    private bool landmarkFlag;
+    public bool LifeFlag, AtCheckPoint;
+    public GameObject[] LoadedMarkers, Audiotriggers;
+    private bool LostFlag;
+    public GameObject M1, M2, M3, M4, M5, M6, Cat;
+    private GameObject[] Markers;
+    public List<GameObject> MarkersList;
+    public int NextMarker, PresentMarker, PreviousMarker, ApproachedMarker;
+    public AudioSource NotifierAudio;
+    public GameObject Player, CheckPrefab, Notifier;
+    public Dictionary<int, Vector3> Positions;
+    public static int CourseLength { get; set; }
 
-    public static int CourseLength
+    private void Awake()
     {
-        get
-        {
-            return courseLength;
-        }
-        set
-        {
-            courseLength = value;
-        }
-    }
-
-    void Awake()
-    {
-        courseLength = 7;
+        CourseLength = 7;
         CourseRef = this;
     }
 
-    void Update()
+    private void Update()
     {
         if (PreferenceSelections.PrefsSelected)
         {
-            courseLength = PreferenceSelections.InstanceAttributes.CourseLength;
+            CourseLength = PreferenceSelections.InstanceAttributes.CourseLength;
         }
     }
 
-    void Start()
+    private void Start()
     {
         NextMarker = 0;
         PresentMarker = 0;
@@ -64,14 +48,16 @@ public class CourseScript : MonoBehaviour
 
     public IEnumerator PromptRoutine(int prompt, float duration)
     {
+        //PlayerScript.PlayerRef.enabled = false;
         PanelOrganizer.PanelsRef.InitUtilPanel(prompt);
 
         yield return new WaitForSeconds(duration);
 
         PanelOrganizer.PanelsRef.ClearUtils();
+        //PlayerScript.PlayerRef.enabled = true;
     }
 
-    void LateUpdate()
+    private void LateUpdate()
     {
         if (GameManager.GameOn)
         {
@@ -100,19 +86,19 @@ public class CourseScript : MonoBehaviour
                     StartCoroutine(PromptRoutine(1, PanelOrganizer.PanelFade));
                     LostFlag = true;
                 }
-                Invoke("ResetLostFlag",4f);
+                Invoke("ResetLostFlag", 4f);
             }
         }
     }
 
-    void ResetLostFlag()
+    private void ResetLostFlag()
     {
         LostFlag = true;
     }
 
-    void LoadMarkerStandins() //load markers from the scene to the loaded markers array
+    private void LoadMarkerStandins() //load markers from the scene to the loaded markers array
     {
-        LoadedMarkers = new GameObject[courseLength];
+        LoadedMarkers = new GameObject[CourseLength];
         LoadedMarkers[0] = M1;
         LoadedMarkers[1] = M2;
         LoadedMarkers[2] = M3;
@@ -128,14 +114,15 @@ public class CourseScript : MonoBehaviour
         LoadMarkerStandins(); // using the positions of stand ins
         ClearMarkers(); // clear any relic markers
         MakeAudioLibrary(); //assemble the audio clip libary from resources folder
-        MakeCourse(DesignCourse(MarkerCollection())); // insert prefab markers into position, in the designed order, with the
+        MakeCourse(DesignCourse(MarkerCollection()));
+        // insert prefab markers into position, in the designed order, with the
         // correct directional audio clips
         Player.transform.position = PlayerScript.PlayerStartPosition;
         Player.transform.rotation = PlayerScript.PlayerStartRotation; // set the player in the starting position
         ResetFlags(); //removed any relic flag information
     }
 
-    void MakeAudioLibrary()
+    private void MakeAudioLibrary()
     {
         //load and label audio files into the game 
         ClipLibrary = new Dictionary<string, AudioClip>();
@@ -176,9 +163,9 @@ public class CourseScript : MonoBehaviour
     {
         // derive position from marker stand ins
 
-        Vector3[] markerVectors = new Vector3[courseLength];
+        var markerVectors = new Vector3[CourseLength];
 
-        for (int i = 0; i < markerVectors.Length; i++)
+        for (var i = 0; i < markerVectors.Length; i++)
         {
             markerVectors[i] = LoadedMarkers[i].transform.position;
         }
@@ -186,11 +173,11 @@ public class CourseScript : MonoBehaviour
         return markerVectors;
     }
 
-    Dictionary<int, Vector3> DesignCourse(Vector3[] vectors)
+    private Dictionary<int, Vector3> DesignCourse(Vector3[] vectors)
     {
         //order the positions of the markers for the specified course
 
-        Dictionary<int, Vector3> positions = new Dictionary<int, Vector3>();
+        var positions = new Dictionary<int, Vector3>();
 
         positions.Add(0, vectors[0]);
         positions.Add(1, vectors[1]);
@@ -203,11 +190,11 @@ public class CourseScript : MonoBehaviour
         return positions;
     }
 
-    void MakeCourse(Dictionary<int, Vector3> positions)
+    private void MakeCourse(Dictionary<int, Vector3> positions)
     {
         // reference the correct audio files using easy to read labels
 
-        string[] sevenCourseDirections = new string[courseLength];
+        var sevenCourseDirections = new string[CourseLength];
         sevenCourseDirections[0] = "forward";
         sevenCourseDirections[1] = "turn left";
         sevenCourseDirections[2] = "turn right";
@@ -216,7 +203,7 @@ public class CourseScript : MonoBehaviour
         sevenCourseDirections[5] = "turn right";
         sevenCourseDirections[6] = "great job";
 
-        string[] sevenCourseLandmarks = new string[courseLength];
+        var sevenCourseLandmarks = new string[CourseLength];
         sevenCourseLandmarks[0] = "streetlamp";
         sevenCourseLandmarks[1] = "crosswalk";
         sevenCourseLandmarks[2] = "trashcan";
@@ -225,10 +212,11 @@ public class CourseScript : MonoBehaviour
         sevenCourseLandmarks[5] = "Missy";
         sevenCourseLandmarks[6] = "Missy";
 
-        foreach (KeyValuePair<int, Vector3> kvp in positions)
+        foreach (var kvp in positions)
         {
             //make an audio checkpoint 
-            GameObject marker = Instantiate(CheckPrefab, kvp.Value, Quaternion.identity) as GameObject; //generate marker prefab in the scene
+            var marker = Instantiate(CheckPrefab, kvp.Value, Quaternion.identity) as GameObject;
+            //generate marker prefab in the scene
             MarkersList.Add(marker);
             marker.tag = "marker";
             AudioScript = marker.GetComponent<AudioTrigger>();
@@ -237,7 +225,7 @@ public class CourseScript : MonoBehaviour
             AudioScript.Place = kvp.Key;
             AudioScript.HasPlayed = false;
 
-            if (AudioScript.Place == courseLength - 1)
+            if (AudioScript.Place == CourseLength - 1)
                 AudioScript.Final = true;
         }
     }
@@ -251,11 +239,10 @@ public class CourseScript : MonoBehaviour
     public void ResetFlags()
     {
         // find all the markers and clear relic flags
-
         Audiotriggers = GameObject.FindGameObjectsWithTag("marker");
         foreach (var i in Audiotriggers)
         {
-            AudioTrigger script = i.GetComponent<AudioTrigger>();
+            var script = i.GetComponent<AudioTrigger>();
             script.ResetPlayedFlag();
         }
     }
@@ -267,7 +254,7 @@ public class CourseScript : MonoBehaviour
     }
 
     // very basic navigational check
-    int ChartNextMove(int num)
+    private int ChartNextMove(int num)
     {
         return ++num;
     }
@@ -289,13 +276,7 @@ public class CourseScript : MonoBehaviour
     public float InitDistanceTracking() // checks distance from player to next marker
     {
         Markers = GameObject.FindGameObjectsWithTag("marker"); //find current markers
-        if (Markers[0] != null)
-        {
-            return DistToNext = Vector3.Distance(Player.transform.position, Markers[NextMarker].transform.position);
-        }
-        else
-        {
-            return 0;
-        }
+        if (Markers[0] == null) return 0;
+        return DistToNext = Vector3.Distance(Player.transform.position, Markers[NextMarker].transform.position);
     }
 }
