@@ -50,6 +50,12 @@ public class CheckpointScript : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            CurrentPlace = 0;
+            flag = false;
+            ReachedNewMarker = false;
+        }
     }
 
     public float AvgTimes()

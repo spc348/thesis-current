@@ -46,7 +46,9 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\Ambient_Music.cs" />
      <Compile Include="Assets\Scripts\AudioTrigger.cs" />
+     <Compile Include="Assets\Scripts\BG_Music.cs" />
      <Compile Include="Assets\Scripts\CheckPrefsComplete.cs" />
      <Compile Include="Assets\Scripts\CheckpointScript.cs" />
      <Compile Include="Assets\Scripts\CourseScript.cs" />
@@ -54,6 +56,7 @@
      <Compile Include="Assets\Scripts\Crossing_trigger.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
      <Compile Include="Assets\Scripts\LightScript.cs" />
+     <Compile Include="Assets\Scripts\Music_Manager.cs" />
      <Compile Include="Assets\Scripts\PanelOrganizer.cs" />
      <Compile Include="Assets\Scripts\PlayerScript.cs" />
      <Compile Include="Assets\Scripts\PreferenceSelections.cs" />

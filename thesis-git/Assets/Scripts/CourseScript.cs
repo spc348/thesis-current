@@ -6,6 +6,7 @@ public class CourseScript : MonoBehaviour
 {
     public static CourseScript CourseRef;
     public AudioTrigger AudioScript;
+    private AudioClip clip;
     public Dictionary<string, AudioClip> ClipLibrary;
     public float DistToNext;
     private bool landmarkFlag;
@@ -19,6 +20,8 @@ public class CourseScript : MonoBehaviour
     public AudioSource NotifierAudio;
     public GameObject Player, CheckPrefab, Notifier;
     public Dictionary<int, Vector3> Positions;
+    private AudioClip[] prompts;
+    public AudioSource source;
     public static int CourseLength { get; set; }
 
     private void Awake()
@@ -44,50 +47,80 @@ public class CourseScript : MonoBehaviour
         AtCheckPoint = false;
         LostFlag = false;
         NotifierAudio = Notifier.GetComponent<AudioSource>();
+        prompts = new AudioClip[4];
     }
 
     public IEnumerator PromptRoutine(int prompt, float duration)
     {
-        //PlayerScript.PlayerRef.enabled = false;
+        PlayerScript.PlayerRef.enabled = false;
+
+        if (!source.isPlaying)
+        {
+            switch (prompt)
+            {
+                case 0:
+                    Music_Manager.MusicRef.SwitchToVoice();
+                    source.PlayOneShot(ClipLibrary["turnaround"]);
+                    break;
+                case 1:
+                    Music_Manager.MusicRef.SwitchToVoice();
+                    source.PlayOneShot(ClipLibrary["toofar"]);
+                    break;
+                case 2:
+                    Music_Manager.MusicRef.SwitchToVoice();
+                    source.PlayOneShot(ClipLibrary["cross"]);
+                    break;
+                case 4:
+                    Music_Manager.MusicRef.SwitchToVoice();
+                    source.PlayOneShot(ClipLibrary["jaywalking"]);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         PanelOrganizer.PanelsRef.InitUtilPanel(prompt);
 
         yield return new WaitForSeconds(duration);
 
         PanelOrganizer.PanelsRef.ClearUtils();
-        //PlayerScript.PlayerRef.enabled = true;
+        PlayerScript.PlayerRef.enabled = true;
     }
 
     private void LateUpdate()
     {
-        if (GameManager.GameOn)
+        if (!GameManager.GameOn) return;
+        if (AtCheckPoint)
         {
-            if (AtCheckPoint)
+            PresentMarker = ApproachedMarker;
+            NextMarker = ChartNextMove(PresentMarker);
+            if (CheckOffTrack() && !landmarkFlag)
             {
-                PresentMarker = ApproachedMarker;
-                NextMarker = ChartNextMove(PresentMarker);
-                if (CheckOffTrack() && !landmarkFlag)
-                {
-                    PreferenceSelections.PrefsRef.SkippedLandmark += 1;
-                    StartCoroutine(PromptRoutine(0, PanelOrganizer.PanelFade));
-                    landmarkFlag = true;
-                }
+                PreferenceSelections.PrefsRef.SkippedLandmark += 1;
+                StartCoroutine(PromptRoutine(0, PanelOrganizer.PanelFade));
+                landmarkFlag = true;
             }
-            else
-            {
-                PreviousMarker = PresentMarker;
-                landmarkFlag = false;
-            }
+        }
+        else
+        {
+            PreviousMarker = PresentMarker;
+            landmarkFlag = false;
+        }
 
-            if (InitDistanceTracking() > 40f)
+        if (InitDistanceTracking() > 40f)
+        {
+            BG_Music.ToggleNeutral();
+            if (!LostFlag)
             {
-                if (!LostFlag)
-                {
-                    PreferenceSelections.PrefsRef.Lost += 1;
-                    StartCoroutine(PromptRoutine(1, PanelOrganizer.PanelFade));
-                    LostFlag = true;
-                }
-                Invoke("ResetLostFlag", 4f);
+                PreferenceSelections.PrefsRef.Lost += 1;
+                StartCoroutine(PromptRoutine(1, PanelOrganizer.PanelFade));
+                LostFlag = true;
             }
+            Invoke("ResetLostFlag", 4f);
+        }
+        else
+        {
+            ResetLostFlag();
         }
     }
 
@@ -113,10 +146,8 @@ public class CourseScript : MonoBehaviour
         MarkersList = new List<GameObject>(); // list of markers in the game
         LoadMarkerStandins(); // using the positions of stand ins
         ClearMarkers(); // clear any relic markers
-        MakeAudioLibrary(); //assemble the audio clip libary from resources folder
+        MakeAudioLibrary(); //assemble the source clip libary from resources folder
         MakeCourse(DesignCourse(MarkerCollection()));
-        // insert prefab markers into position, in the designed order, with the
-        // correct directional audio clips
         Player.transform.position = PlayerScript.PlayerStartPosition;
         Player.transform.rotation = PlayerScript.PlayerStartRotation; // set the player in the starting position
         ResetFlags(); //removed any relic flag information
@@ -124,18 +155,11 @@ public class CourseScript : MonoBehaviour
 
     private void MakeAudioLibrary()
     {
-        //load and label audio files into the game 
+        //load and label source files into the game 
         ClipLibrary = new Dictionary<string, AudioClip>();
 
         //utilities
         ClipLibrary.Add("atThe", Resources.Load<AudioClip>("atThe"));
-        /*
-         * make a separate 'the' clip 
-         * 
-         * make a 'go to' clip
-         * 
-         */
-
         //directionals
         ClipLibrary.Add("check", Resources.Load<AudioClip>("check"));
         ClipLibrary.Add("great job", Resources.Load<AudioClip>("greatjob"));
@@ -144,6 +168,12 @@ public class CourseScript : MonoBehaviour
         ClipLibrary.Add("turn left", Resources.Load<AudioClip>("turnleft"));
         ClipLibrary.Add("turn right", Resources.Load<AudioClip>("turnright"));
         ClipLibrary.Add("forward", Resources.Load<AudioClip>("forward"));
+        ClipLibrary.Add("goto", Resources.Load<AudioClip>("goto"));
+        //prompts
+        ClipLibrary.Add("cross", Resources.Load<AudioClip>("crossing"));
+        ClipLibrary.Add("jaywalking", Resources.Load<AudioClip>("jaywalker"));
+        ClipLibrary.Add("toofar", Resources.Load<AudioClip>("toofar"));
+        //reward
         //landmarks
         ClipLibrary.Add("trashcan", Resources.Load<AudioClip>("trashcan"));
         ClipLibrary.Add("Missy", Resources.Load<AudioClip>("Missy"));
@@ -153,9 +183,6 @@ public class CourseScript : MonoBehaviour
         ClipLibrary.Add("hydrant", Resources.Load<AudioClip>("hydrant"));
         ClipLibrary.Add("tree", Resources.Load<AudioClip>("tree"));
         //prompts
-        //getting cold prompt
-        //turn around prompt
-        // jaywalking
         //reward
     }
 
@@ -192,7 +219,7 @@ public class CourseScript : MonoBehaviour
 
     private void MakeCourse(Dictionary<int, Vector3> positions)
     {
-        // reference the correct audio files using easy to read labels
+        // reference the correct source files using easy to read labels
 
         var sevenCourseDirections = new string[CourseLength];
         sevenCourseDirections[0] = "forward";
@@ -214,7 +241,7 @@ public class CourseScript : MonoBehaviour
 
         foreach (var kvp in positions)
         {
-            //make an audio checkpoint 
+            //make an source checkpoint 
             var marker = Instantiate(CheckPrefab, kvp.Value, Quaternion.identity) as GameObject;
             //generate marker prefab in the scene
             MarkersList.Add(marker);
@@ -263,6 +290,7 @@ public class CourseScript : MonoBehaviour
     {
         ClearMarkers();
         ResetFlags();
+        MakeCourse(DesignCourse(MarkerCollection()));
     }
 
     public void ClearMarkers() //remove markers from last game
@@ -276,7 +304,8 @@ public class CourseScript : MonoBehaviour
     public float InitDistanceTracking() // checks distance from player to next marker
     {
         Markers = GameObject.FindGameObjectsWithTag("marker"); //find current markers
-        if (Markers[0] == null) return 0;
+        if (Markers[0] != null)
+            return 0;
         return DistToNext = Vector3.Distance(Player.transform.position, Markers[NextMarker].transform.position);
     }
 }

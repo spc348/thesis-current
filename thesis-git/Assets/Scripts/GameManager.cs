@@ -1,43 +1,51 @@
 using UnityEngine;
-using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
-	public bus_movement BusScript;
-	public GameObject Player, Bus, Cat;
-	public static int Tokens;
-	public Crossing Crossing;
-
+    public static int Tokens;
     public static bool GameOn;
-	public static GameManager GameManagerRef;
+    public static GameManager GameManagerRef;
+    public bus_movement BusScript;
+    public Crossing Crossing;
+    public GameObject Player, Bus, Cat;
 
-	void Awake ()
-	{
-		GameManagerRef = this;
+    private void Awake()
+    {
+        GameManagerRef = this;
         GameOn = false;
-	}
+    }
 
-	void Start ()
-	{
-		BusScript = Bus.GetComponent<bus_movement> ();
-	}
-	
-	public void StartGame ()
-	{
+    public static void SetGameOn()
+    {
+        GameOn = true;
+    }
+
+    public static void SetGameOff()
+    {
+        GameOn = false;
+    }
+
+    private void Start()
+    {
+        BusScript = Bus.GetComponent<bus_movement>();
+    }
+
+    public void StartGame()
+    {
         PreferenceSelections.PrefsRef.MakePlayerInstance();
         Handheld.PlayFullScreenMovie("story.mp4", Color.black, FullScreenMovieControlMode.Full);
-        GameOn = true;
-		Tokens = 0; 
-		CourseScript.CourseRef.GameStart ();
-		PanelOrganizer.PanelsRef.GameStart ();
-		PlayerScript.PlayerRef.Reset ();
-		StartCoroutine (BusScript.drive ());
+        SetGameOn();
+        Tokens = 0;
+        CourseScript.CourseRef.GameStart();
+        PanelOrganizer.PanelsRef.GameStart();
+        PlayerScript.PlayerRef.Reset();
+        StartCoroutine(BusScript.drive());
         PlayerScript.PlayerRef.GetComponent<Collider>().enabled = true;
-	}
+    }
 
     public void EndGame()
     {
-        GameOn = false;
+        SetGameOff();
         PlayerScript.PlayerRef.GetComponent<Collider>().enabled = false;
         PreferenceSelections.PrefsRef.LogData();
         PreferenceSelections.PrefsRef.ClearData();
@@ -46,28 +54,29 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame()
     {
-        GameOn = false;
+        SetGameOff();
         PlayerScript.PlayerRef.GetComponent<Collider>().enabled = false;
     }
 
     public void ResumeGame()
     {
-        GameOn = true;
+        SetGameOn();
         PlayerScript.PlayerRef.GetComponent<Collider>().enabled = false;
+        PanelOrganizer.PanelsRef.SetPanel(PanelOrganizer.PanelsRef.GamePanel);
     }
 
-	public void ResetGame ()
+    public void ResetGame()
     {
         Handheld.PlayFullScreenMovie("story.mp4", Color.black, FullScreenMovieControlMode.Full);
-        GameOn = true;
-        PlayerScript.PlayerRef.GetComponent<Collider>().enabled = true;
-		PreferenceSelections.PrefsRef.MakePlayerInstance ();
         Tokens = 0;
-		PanelOrganizer.PanelsRef.Restart ();
-		CourseScript.CourseRef.Restart ();
-		BusScript.restart ();
-		BusScript.drive ();
-		PlayerScript.PlayerRef.Reset ();
-		StartCoroutine (BusScript.drive ());
-	}
+        PlayerScript.PlayerRef.GetComponent<Collider>().enabled = true;
+        PreferenceSelections.PrefsRef.MakePlayerInstance();
+        BusScript.restart();
+        BusScript.drive();
+        StartCoroutine(BusScript.drive());
+        PanelOrganizer.PanelsRef.Restart();
+        CourseScript.CourseRef.Restart();
+        PlayerScript.PlayerRef.Reset();
+        SetGameOn();
+    }
 }

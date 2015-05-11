@@ -30,10 +30,12 @@ public class WalkableTrigger : MonoBehaviour
     public void cannot_walk()
     {
         notifier_mesh.material.color = Color.red;
+        BG_Music.ToggleNeutral();
     }
 
     public void can_walk()
     {
         notifier_mesh.material.color = Color.green;
+        BG_Music.ToggleHappy();
     }
 }

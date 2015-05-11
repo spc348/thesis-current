@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioTrigger : MonoBehaviour
 {
@@ -59,6 +60,7 @@ public class AudioTrigger : MonoBehaviour
 	IEnumerator playAudioRoutine (AudioClip direction, AudioClip landmark)
 	{
 		if (!source.isPlaying) {
+            Music_Manager.MusicRef.SwitchToVoice();
 			source.PlayOneShot (direction);
 			yield return new WaitForSeconds (direction.length);
 
@@ -70,6 +72,7 @@ public class AudioTrigger : MonoBehaviour
 
 			PanelOrganizer.PanelsRef.ClearSubpanels ();
 			PlayerScript.PlayerRef.enabled = true;
+            Music_Manager.MusicRef.SwitchToAmbient();
 		}
 	}
 

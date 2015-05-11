@@ -9,7 +9,7 @@ public class PanelOrganizer : MonoBehaviour
 {
     public GameObject[] Panels, TokenArray, Subpanels, Audiotriggers, Markers;
     public GameObject GameText, Panel0, Panel1, Panel2, Panel3, Panel4, Panel5, Panel6, Player;
-    public GameObject Panel7, Panel8, Panel9;
+    public GameObject Panel7, Panel8, Panel9, Panel10;
     public GameObject Token1, Token2, Token3, Token4, Token5, Token6, Token7;
     public int ActivePanel, StartPanel, EndPanel, GamePanel;
     public Camera MainCamera;
@@ -77,7 +77,7 @@ public class PanelOrganizer : MonoBehaviour
 
     void LoadMainPanel()
     {
-        Panels = new GameObject[11];
+        Panels = new GameObject[12];
         Panels[0] = Panel0;
         Panels[1] = Panel1;
         Panels[2] = Panel2;
@@ -89,6 +89,7 @@ public class PanelOrganizer : MonoBehaviour
         Panels[8] = Panel7;
         Panels[9] = Panel8;
         Panels[10] = Panel9;
+        Panels[11] = Panel10;
     }
 
     public void UtilPanels()
@@ -201,7 +202,7 @@ public class PanelOrganizer : MonoBehaviour
             Destroy(i);
         }
         ClearTokens();
-        SetPanel(StartPanel);
+        SetPanel(GamePanel);
     }
 
     public void GameStart()
