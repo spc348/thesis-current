@@ -177,5 +177,4 @@ Global
 		$27.IncludeInstanceMembers = True
 		$27.IncludeStaticEntities = True
 	EndGlobalSection
-
 EndGlobal
